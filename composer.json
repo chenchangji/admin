@@ -9,6 +9,11 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+        "alibabacloud/client": "^1.5",
+        "alibabacloud/mts-20140618": "3.0.0",
+        "alibabacloud/oss-v2": "^0.3.0",
+        "alibabacloud/sdk": "^1.8",
+        "aliyuncs/oss-sdk-php": "^2.7",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",

@@ -32,11 +32,16 @@ Route::prefix('admin-api')
             Route::post('vue-routers/by-import', [C\VueRouterController::class, 'importVueRouters'])->name('vue-routers.by-import');
             Route::put('vue-routers', [C\VueRouterController::class, 'batchUpdate'])->name('vue-routers.batch.update');
             Route::resource('vue-routers', C\VueRouterController::class)->except(['show']);
+            Route::resource('admin-materials', C\AdminMaterialController::class)->except(['show']);
+            Route::resource('admin-actors', C\AdminActorController::class)->except(['show']);
+            Route::get('admin-actors/list', [C\AdminActorController::class, 'getList'])->name('admin-actors.list');
 
             Route::resource('admin-permissions', C\AdminPermissionController::class)->except(['show']);
             Route::resource('admin-roles', C\AdminRoleController::class)->except(['show']);
 
             Route::resource('config-categories', C\ConfigCategoryController::class)->except(['show', 'create']);
+
+            Route::resource('compose-videos', C\ComposeVideoController::class)->except(['show']);
 
             // 清除并缓存配置
             Route::post('configs/cache', [C\ConfigController::class, 'cache'])->name('configs.cache');
@@ -72,5 +77,9 @@ Route::prefix('admin-api')
                 ->except(['store', 'show', 'create']);
             Route::put('system-media', [C\SystemMediaController::class, 'batchUpdate'])->name('system-media.batch.update');
             Route::delete('system-media', [C\SystemMediaController::class, 'batchDestroy'])->name('system-media.batch.destroy');
+            Route::get('oss/auth', [C\OssController::class, 'getClient'])->name('getClient');
+            //素材拼接模板
+            Route::resource('admin-templates', C\AdminTemplateController::class)->except(['show']);
+            Route::post('admin-templates/generate-video',[C\AdminTemplateController::class, 'generateVideo'])->name('generateVideo');
         });
     });

@@ -24,4 +24,18 @@ export default {
   'vue-routers/:id(\\d+)/edit': () => import('@v/vue-routers/Form'),
 
   'system-media': () => import('@v/system-media/Index'),
+
+  'admin-materials': () => import('@v/admin-materials/Index'),
+  'admin-materials/create': () => import('@v/admin-materials/Form'),
+  'admin-materials/:id(\\d+)/edit': () => import('@v/admin-materials/Form'),
+
+  'admin-actors': () => import('@v/admin-actors/Index'),
+  'admin-actors/create': () => import('@v/admin-actors/Form'),
+  'admin-actors/:id(\\d+)/edit': () => import('@v/admin-actors/Form'),
+
+  'admin-templates': () => import('@v/admin-templates/Index'),
+  'admin-templates/create': () => import('@v/admin-templates/Form'),
+  'admin-templates/:id(\\d+)/edit': () => import('@v/admin-templates/Form'),
+
+  'compose-video': () => import('@v/compose-videos/Index'),
 }
