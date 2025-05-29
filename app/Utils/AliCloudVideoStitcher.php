@@ -81,7 +81,7 @@ class AliCloudVideoStitcher {
         $config = [
             'MergeList' => array_map(function($url) {
                 return ['MergeURL' => $url];
-            }, $video_urls)
+            }, $merge_list)
         ];
 
         // 本地保存临时文件
