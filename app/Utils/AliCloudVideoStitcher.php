@@ -72,18 +72,14 @@ class AliCloudVideoStitcher {
 
      // 生成配置文件并返回OSS路径
     public function generateMergeConfig($video_urls) {
-        $input_video = $video_urls[0];
-        // 从 MergeList 中排除 input_video
-        $merge_list = array_filter($video_urls, function($url) use ($input_video) {
-            return $url !== $input_video;
-        });
+        unset($video_urls[0]);
+        $input_video = array_values($video_urls);
         // 构建配置文件内容
         $config = [
             'MergeList' => array_map(function($url) {
                 return ['MergeURL' => $url];
-            }, $merge_list)
+            }, $input_video)
         ];
-
         // 本地保存临时文件
         $localConfigPath = '../storage/tmp/concat-config-' . time() . '.json';
         file_put_contents($localConfigPath, json_encode($config, JSON_PRETTY_PRINT));
@@ -109,7 +105,7 @@ class AliCloudVideoStitcher {
             logger("上传失败: " . $e->getMessage());
         }
         
-        unlink($localConfigPath); // 删除本地临时文件
+        // unlink($localConfigPath); // 删除本地临时文件
         return $result['info']['url'];
     }
             
