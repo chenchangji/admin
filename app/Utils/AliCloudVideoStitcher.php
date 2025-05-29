@@ -72,6 +72,11 @@ class AliCloudVideoStitcher {
 
      // 生成配置文件并返回OSS路径
     public function generateMergeConfig($video_urls) {
+        $input_video = $video_urls[0];
+        // 从 MergeList 中排除 input_video
+        $merge_list = array_filter($video_urls, function($url) use ($input_video) {
+            return $url !== $input_video;
+        });
         // 构建配置文件内容
         $config = [
             'MergeList' => array_map(function($url) {
