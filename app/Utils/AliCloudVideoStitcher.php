@@ -61,7 +61,6 @@ class AliCloudVideoStitcher {
     }
 
     public function outputs($video_urls, $key) {
-        unset($video_urls[0]);
         $merge_config_url = $this->generateMergeConfig($video_urls);
         $output = [
             'OutputObject' => urlencode("video/".$key.".mp4"),
