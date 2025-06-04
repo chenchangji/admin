@@ -9,6 +9,7 @@ use App\Http\Resources\AdminMaterialResource;
 use App\Exports\AdminMaterialsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+
 use Exception;
 
 class AdminMaterialController extends Controller
@@ -71,28 +72,33 @@ class AdminMaterialController extends Controller
 
     public function export(Request $request)
     {
+        // 清理缓冲区
+        ob_end_clean();
+        ob_start();
         try {
-
-            // 获取并清理参数
             $params = $request->all();
             unset($params['page'], $params['per_page']);
             
+            \Log::info('导出参数', $params);
             
-            // 创建导出实例
+            // 添加内存限制
+            ini_set('memory_limit', '512M');
+            set_time_limit(300);
+
             $export = new AdminMaterialsExport($params);
             
-            // 生成文件名
-            $fileName = '素材列表_' . date('Ymd_His') . '.xlsx';
-            
-            // 直接返回 Excel 下载响应
-            return Excel::download($export, $fileName);
+            // 使用可中断的导出方式
+            return Excel::download($export, '素材列表' . date('Ymd_His') . '.csv', \Maatwebsite\Excel\Excel::CSV, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
             
         } catch (\Exception $e) {
-            logger('导出失败: ' . $e->getMessage());
-            return response()->json([
-                'error' => '导出失败',
-                'message' => $e->getMessage()
-            ], 500);
+            \Log::error('导出失败: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            
+            // 返回错误页面而不是JSON
+            return back()->withErrors('导出失败: ' . $e->getMessage());
         }
     }
+
+
 }

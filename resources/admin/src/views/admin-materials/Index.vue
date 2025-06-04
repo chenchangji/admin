@@ -84,6 +84,7 @@ import {
   exportAdminMaterials,
 } from '@/api/admin-materials'
 import { removeWhile } from '@/libs/utils'
+import { saveAs } from 'file-saver'
 
 export default {
   name: 'Index',
@@ -241,105 +242,94 @@ export default {
     },
 
     // 新增导出方法
-    async handleExport() {
-    this.exportLoading = true;
-    try {
-      const isQingxuePath = this.$route.path.endsWith('/qingxue');
-      const exportParams = {
-        ...this.$route.query,
-        product_id: isQingxuePath ? 2 : 1,
-        sort_field: this.activeSortField,
-        sort_order: this.activeSortOrder === 'ascend' ? 'asc' : 'desc'
-      };
-
-      const response = await exportAdminMaterials(exportParams);
-      
-      // 1. 检查响应类型
-      const contentType = response.headers['content-type'] || '';
-      const isExcel = contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') || 
-                      contentType.includes('application/octet-stream');
-      
-      if (!isExcel) {
-        // 尝试读取错误信息
-        const reader = new FileReader();
-        reader.onload = () => {
-          try {
-            const errorData = JSON.parse(reader.result);
-            this.$message.error(`导出失败: ${errorData.message || errorData.error}`);
-          } catch (e) {
-            this.$message.error('导出失败: 服务器返回无效内容');
-          }
+     async handleExport() {
+      this.exportLoading = true;
+      try {
+        const isQingxuePath = this.$route.path.endsWith('/qingxue');
+        const exportParams = {
+          ...this.$route.query,
+          product_id: isQingxuePath ? 2 : 1,
+          sort_field: this.activeSortField,
+          sort_order: this.activeSortOrder === 'ascend' ? 'asc' : 'desc'
         };
-        reader.readAsText(response.data);
-        return;
-      }
-      
-      // 2. 获取正确的文件名
-      let fileName = '素材列表.xlsx';
-      const contentDisposition = response.headers['content-disposition'];
-      
-      if (contentDisposition) {
-        // 处理 UTF-8 文件名
-        const utf8Match = contentDisposition.match(/filename\*=UTF-8''(.+?)(?:;|$)/i);
-        if (utf8Match && utf8Match[1]) {
-          fileName = decodeURIComponent(utf8Match[1]);
-        } else {
-          // 处理普通文件名
-          const match = contentDisposition.match(/filename="?(.+?)"?(?:;|$)/i);
-          if (match && match[1]) {
-            fileName = match[1];
-          }
-        }
-      }
-      
-      // 3. 创建 Blob 并下载
-      const blob = new Blob([response.data], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-      });
-      
-      // 4. 使用更可靠的下载方式
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = fileName;
-      link.style.display = 'none';
-      
-      document.body.appendChild(link);
-      link.click();
-      
-      // 5. 添加延迟确保下载完成
-      setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(downloadUrl);
-        this.$message.success('文件下载完成');
-      }, 1000);
-      
-    } catch (error) {
-      console.error('导出失败:', error);
-      
-      if (error.response) {
-        // 处理错误响应
-        if (error.response.data instanceof Blob) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            try {
-              const errorData = JSON.parse(reader.result);
-              this.$message.error(`导出失败: ${errorData.message || errorData.error}`);
-            } catch (e) {
-              this.$message.error('导出失败: 服务器返回无效错误格式');
+
+        const response = await exportAdminMaterials(exportParams);
+        
+        // 1. 检查响应类型
+        const contentType = response.headers['content-type'] || '';
+        
+        // 情况A: 成功返回 Excel 文件
+        if (contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') || 
+            contentType.includes('application/octet-stream')) {
+          
+          // 获取文件名
+          let fileName = '素材列表.xlsx';
+          const contentDisposition = response.headers['content-disposition'] || '';
+          
+          if (contentDisposition) {
+            // 处理 UTF-8 文件名
+            const utf8Match = contentDisposition.match(/filename\*=UTF-8''([\w%\-\.]+)/i);
+            if (utf8Match && utf8Match[1]) {
+              fileName = decodeURIComponent(utf8Match[1]);
+            } else {
+              // 处理普通文件名
+              const match = contentDisposition.match(/filename="?([^;"]+)"?/i);
+              if (match && match[1]) {
+                fileName = match[1];
+              }
             }
-          };
-          reader.readAsText(error.response.data);
-        } else {
-          this.$message.error(`导出失败: ${error.response.data.message || error.response.statusText}`);
+          }
+          
+          // 使用 file-saver 保存文件
+          const blob = new Blob([response.data], { 
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+          });
+          
+          saveAs(blob, fileName);
+          this.$message.success('文件下载完成');
+          
+        } 
+        // 情况B: 错误响应 (JSON 格式)
+        else if (contentType.includes('application/json')) {
+          const errorData = response.data;
+          this.$message.error(`导出失败: ${errorData.message || errorData.error}`);
         }
-      } else {
-        this.$message.error(`导出失败: ${error.message || '未知错误'}`);
+        // 情况C: 未知响应类型
+        else {
+          console.error('未知响应类型:', contentType, response.data);
+          this.$message.error('导出失败: 服务器返回未知格式');
+        }
+        
+      } catch (error) {
+        console.error('导出请求失败:', error);
+        
+        // 处理网络错误或请求失败
+        if (error.response) {
+          // 处理 HTTP 错误响应 (500 等)
+          if (error.response.data instanceof Blob) {
+            // 尝试解析 Blob 格式的错误响应
+            const reader = new FileReader();
+            reader.onload = () => {
+              try {
+                const errorData = JSON.parse(reader.result);
+                this.$message.error(`导出失败: ${errorData.message || errorData.error}`);
+              } catch (e) {
+                this.$message.error('导出失败: ' + reader.result.substring(0, 100));
+              }
+            };
+            reader.readAsText(error.response.data);
+          } else if (typeof error.response.data === 'object') {
+            this.$message.error(`导出失败: ${error.response.data.message || error.response.statusText}`);
+          } else {
+            this.$message.error(`导出失败: ${error.response.status} ${error.response.statusText}`);
+          }
+        } else {
+          this.$message.error(`导出失败: ${error.message || '网络请求失败'}`);
+        }
+      } finally {
+        this.exportLoading = false;
       }
-    } finally {
-      this.exportLoading = false;
     }
-}
   },
   watch: {
     $route: {
