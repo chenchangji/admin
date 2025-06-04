@@ -26,6 +26,7 @@ export default {
   'system-media': () => import('@v/system-media/Index'),
 
   'admin-materials': () => import('@v/admin-materials/Index'),
+  'admin-materials/qingxue': () => import('@v/admin-materials/Index'),
   'admin-materials/create': () => import('@v/admin-materials/Form'),
   'admin-materials/:id(\\d+)/edit': () => import('@v/admin-materials/Form'),
 

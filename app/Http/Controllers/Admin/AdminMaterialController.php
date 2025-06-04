@@ -6,6 +6,8 @@ use App\Http\Filters\AdminMaterialFilter;
 use App\Models\AdminMaterial;
 use App\Http\Requests\AdminMaterialRequest;
 use App\Http\Resources\AdminMaterialResource;
+use App\Exports\AdminMaterialsExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Exception;
 
@@ -65,5 +67,32 @@ class AdminMaterialController extends Controller
     {
         $adminMaterial->update(['status'=>2]);
         return $this->noContent();
+    }
+
+    public function export(Request $request)
+    {
+        try {
+
+            // 获取并清理参数
+            $params = $request->all();
+            unset($params['page'], $params['per_page']);
+            
+            
+            // 创建导出实例
+            $export = new AdminMaterialsExport($params);
+            
+            // 生成文件名
+            $fileName = '素材列表_' . date('Ymd_His') . '.xlsx';
+            
+            // 直接返回 Excel 下载响应
+            return Excel::download($export, $fileName);
+            
+        } catch (\Exception $e) {
+            logger('导出失败: ' . $e->getMessage());
+            return response()->json([
+                'error' => '导出失败',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

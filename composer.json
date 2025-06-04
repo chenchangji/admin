@@ -20,8 +20,10 @@
         "laravel/framework": "^8.12",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.2",
+        "maatwebsite/excel": "^3.1.58",
         "mews/captcha": "^3.2",
-        "overtrue/laravel-lang": "^4.2"
+        "overtrue/laravel-lang": "^4.2",
+        "phpoffice/phpspreadsheet": "^1.29.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.9",

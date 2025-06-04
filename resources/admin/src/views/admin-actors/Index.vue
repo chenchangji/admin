@@ -61,7 +61,7 @@ export default {
         },
         {
           field: 'name',
-          label: '字段名',
+          label: '姓名',
         },
       ],
       adminActor: [],

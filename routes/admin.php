@@ -33,6 +33,7 @@ Route::prefix('admin-api')
             Route::put('vue-routers', [C\VueRouterController::class, 'batchUpdate'])->name('vue-routers.batch.update');
             Route::resource('vue-routers', C\VueRouterController::class)->except(['show']);
             Route::resource('admin-materials', C\AdminMaterialController::class)->except(['show']);
+            Route::get('admin-materials/export', [C\AdminMaterialController::class, 'export'])->name('export');;
             Route::resource('admin-actors', C\AdminActorController::class)->except(['show']);
             Route::get('admin-actors/list', [C\AdminActorController::class, 'getList'])->name('admin-actors.list');
 

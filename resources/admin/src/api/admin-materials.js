@@ -23,3 +23,7 @@ export function editAdminMaterial(id) {
 export function destroyAdminMaterial(id) {
   return Request.delete(`admin-materials/${id}`)
 }
+
+export function exportAdminMaterials(params) {
+  return Request.get('admin-materials/export', { params })
+}

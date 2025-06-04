@@ -13,6 +13,7 @@ class AdminMaterialFilter extends Filter
         'user_id',
         'class',
         'sub_class',
+        'product_id',
     ];
 
     protected function title($val)
@@ -33,5 +34,10 @@ class AdminMaterialFilter extends Filter
     protected function subClass($val)
     {
         $this->builder->where('sub_class', $val);
+    }
+
+    protected function productId($val)
+    {
+        $this->builder->where('product_id', $val);
     }
 }

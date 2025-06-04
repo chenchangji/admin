@@ -238,14 +238,14 @@ export default {
     },
     async beforeUpload(file) {
       const isVideo = file.type.includes('video/')
-      const isLt100M = file.size / 1024 / 1024 < 100
+      const isLt200M = file.size / 1024 / 1024 < 200
       
       if (!isVideo) {
         message.error('只能上传视频文件！')
         return false
       }
-      if (!isLt100M) {
-        message.error('视频大小不能超过 100MB！')
+      if (!isLt200M) {
+        message.error('视频大小不能超过 200MB！')
         return false
       }
       
