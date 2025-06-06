@@ -10,11 +10,10 @@
       :class="{ sider: true, 'sider-mini-width': miniWidth }"
       v-click-outside="onClickOutside"
     >
-      <router-link to="/" class="flex-box logo" :title="appName">
-        <span v-if="appLogo" class="flex-box logo-wrapper">
+      <router-link to="/" class="vertical-layout logo" :title="appName">
+        <span v-if="appLogo" class="logo-wrapper">
           <img :src="appLogo" class="logo-img">
         </span>
-        <span v-show="appLogo && !collapsed" class="ml-2 h-100"/>
         <span v-show="!appLogo || !collapsed" class="app-name">{{ appName }}</span>
       </router-link>
       <div class="ma-1">
@@ -135,7 +134,7 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #fff;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 36px;
   display: inline-block;
   width: 100%;
@@ -143,7 +142,7 @@ export default {
 
 .logo-img {
   max-width: 100%;
-  max-height: 100%;
+  height: 90px;
   border-radius: 4px;
 }
 
@@ -176,4 +175,24 @@ export default {
   opacity: 0;
   transform: translateX(30px);
 }
+
+.vertical-layout {
+  flex-direction: column; /* 改为垂直排列 */
+  align-items: center;    /* 水平居中 */
+  text-align: center;     /* 文字居中 */
+  gap: 8px;               /* 元素间距 */
+  padding: 12px 0;        /* 上下内边距 */
+}
+ 
+.vertical-layout .logo-wrapper {
+  margin: 0;              /* 清除原有margin */
+  width: 60px;            /* 固定logo宽度 */
+  height: 60px;           /* 固定logo高度 */
+}
+ 
+.vertical-layout .logo-img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
 </style>
