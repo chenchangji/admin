@@ -25,3 +25,4 @@ yarn.lock
 public/.htaccess
 public/.htaccess
 /storage/tmp
+public/admin/index.html

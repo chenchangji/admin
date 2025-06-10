@@ -27,6 +27,7 @@ export default {
 
   'admin-materials': () => import('@v/admin-materials/Index'),
   'admin-materials/qingxue': () => import('@v/admin-materials/Index'),
+  'admin-materials/yankang': () => import('@v/admin-materials/Index'),
   'admin-materials/create': () => import('@v/admin-materials/Form'),
   'admin-materials/:id(\\d+)/edit': () => import('@v/admin-materials/Form'),
 

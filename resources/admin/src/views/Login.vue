@@ -1,6 +1,9 @@
 <template>
   <div class="login">
-    <a-card class="login-card" :title="appName">
+    <a-card class="login-card" >
+      <div class="login-title">
+          <h1>普生素材管理系统</h1>
+      </div>
       <login-form
         ref="form"
         @keydown.enter.native="$refs.login.onAction"
@@ -51,12 +54,26 @@ export default {
 
 <style scoped lang="less">
 .login {
-  height: 100vh;
   display: flex;
+  justify-content: right;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+  background-image: url('login-bg.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 .login-card {
-  width: 300px;
-  margin: 30vh auto auto auto;
+    width: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    translate: -50%;
+}
+
+.login-title h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1890ff;
 }
 </style>

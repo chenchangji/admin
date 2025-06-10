@@ -53,6 +53,7 @@
         <a-select v-model="form.product_id" placeholder="请选择产品">
           <a-select-option :value="1">舒筋健腰丸</a-select-option>
           <a-select-option :value="2">清血八味片</a-select-option>
+          <a-select-option :value="3">咽康</a-select-option>
         </a-select>
       </lz-form-item>
       <lz-form-item label="产品规格"  prop="product_format">

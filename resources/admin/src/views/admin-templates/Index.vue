@@ -149,7 +149,8 @@ export default {
     getProductLabel(classValue) {
       const classMap = {
         1: '舒筋健腰丸',
-        2: '清血八味片'
+        2: '清血八味片',
+        3: '咽康'
       };
       return classMap[classValue] || classValue; // 找不到则显示原值
     },

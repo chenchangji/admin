@@ -226,11 +226,17 @@ export default {
     },
 
     async fetchData() {
-        // 获取当前路由路径并判断是否以 '/qingxue' 结尾
-        const isQingxuePath = this.$route.path.endsWith('/qingxue');
+        const { path } = this.$route;
+        let product_id = 1;
+
+        if (path.endsWith('/qingxue')) {
+          product_id = 2;
+        } else if (path.endsWith('/yankang')) {
+          product_id = 3;
+        }
         const params = {
           ...this.$route.query,
-          product_id: isQingxuePath ? 2 : 1, // 动态设置 product_id
+          product_id: product_id,
           page: this.pagination.current,
           sort_field: this.activeSortField,
           sort_order: this.activeSortOrder === 'ascend' ? 'asc' : 'desc'
@@ -245,10 +251,17 @@ export default {
      async handleExport() {
       this.exportLoading = true;
       try {
-        const isQingxuePath = this.$route.path.endsWith('/qingxue');
+        const { path } = this.$route;
+        let product_id = 1;
+
+        if (path.endsWith('/qingxue')) {
+          product_id = 2;
+        } else if (path.endsWith('/yankang')) {
+          product_id = 3;
+        }
         const exportParams = {
           ...this.$route.query,
-          product_id: isQingxuePath ? 2 : 1,
+          product_id: product_id,
           sort_field: this.activeSortField,
           sort_order: this.activeSortOrder === 'ascend' ? 'asc' : 'desc'
         };

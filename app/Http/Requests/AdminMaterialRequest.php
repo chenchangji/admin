@@ -17,7 +17,7 @@ class AdminMaterialRequest extends FormRequest
             'desc' => 'string|nullable',
             'screen_type' => 'required|int',
             'product_id'=> 'required|int',
-            'product_format'=> 'int',
+            'product_format'=> 'int|nullable',
             'tag'=> 'int|nullable',
 
         ];
