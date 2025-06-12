@@ -10,16 +10,34 @@
         <a-input v-model="form.title"/>
       </lz-form-item>
       <lz-form-item label="关联产品" required prop="product_id">
-        <a-select v-model="form.product_id" placeholder="请选择产品">
-          <a-select-option :value="1">舒筋健腰丸</a-select-option>
-          <a-select-option :value="2">清血八味片</a-select-option>
-          <a-select-option :value="3">咽康</a-select-option>
+        <a-select
+          v-model="form.product_id"
+          placeholder="请选择产品"
+          @change="handleProductChange"
+          style="width: 200px; margin-right: 10px"
+        >
+          <a-select-option
+            v-for="item in productOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </a-select-option>
         </a-select>
-      </lz-form-item>
-      <lz-form-item label="关联产品规格"  prop="product_format">
-        <a-select v-model="form.product_format" placeholder="请选择产品规格">
-          <a-select-option :value="1">24片</a-select-option>
-          <a-select-option :value="2">120片</a-select-option>
+
+        <a-select
+          v-model="form.product_format"
+          placeholder="请选择产品规格"
+          :disabled="!form.product_id"
+          style="width: 200px"
+        >
+          <a-select-option
+            v-for="item in productFormatOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </a-select-option>
         </a-select>
       </lz-form-item>
       <lz-form-item label="横竖屏" required prop="screen_type">
@@ -123,6 +141,29 @@ export default {
           { value: 43, label: 'D3-厂家活动' },
           { value: 44, label: 'D6-旧素材混剪' }
         ],
+      // 产品选项
+      productOptions: [
+        { value: 1, label: '舒筋健腰丸' },
+        { value: 2, label: '清血八味片' },
+        { value: 3, label: '咽康' }
+      ],
+      // 产品规格映射（根据产品选项动态变化）
+      productFormatMap: {
+        1: [ // 舒筋
+          { value: 1, label: '拆零' },
+          { value: 2, label: '大盒' },
+        ],
+        2: [ // 清血
+          { value: 3, label: '24片' },
+          { value: 4, label: '120片' }
+        ],
+        3: [ // 咽康
+          { value: 5, label: '18片' },
+          { value: 6, label: '40片' }
+        ]
+      },
+      // 当前可选的二级子分类（初始为空）
+      productFormatOptions: []
     }
   },
 
@@ -136,6 +177,7 @@ export default {
 
       if ($form.realEditMode) {
         ({ data } = await editAdminTemplate($form.resourceId))
+        this.handleProductChange(data.product_id);
       } else {
         ({ data } = await createAdminTemplate())
       }
@@ -163,6 +205,10 @@ export default {
         console.error('获取演员列表失败:', error);
         this.$message.error('获取演员列表失败');
       }
+    },
+    handleProductChange(value) {
+      this.form.product_format = undefined; // 清空规格选择
+      this.productFormatOptions = this.productFormatMap[value] || []; // 更新规格选项
     },
   },
 }

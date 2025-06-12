@@ -18,12 +18,12 @@ class AdminTemplateService
         AdminCreateVideoJob::create($insert);
         //获取创建模板配置
         $template = AdminTemplate::find($data['template_id'])->toArray();
-        //大类规则，类似：A+B+C+D
+        //小类规则，类似：A1+B2+C3+D4
         $rules   = explode('+', $template['class_rules']);
-        $sets['A'] = $this->getMaterials($template, "A");
-        $sets['B'] = $this->getMaterials($template, "B");
-        $sets['C'] = $this->getMaterials($template, "C");
-        $sets['D'] = $this->getMaterials($template, "D");
+        $sets = [];
+        foreach ($rules as  $sub_class) {
+            $sets[$sub_class] = $this->getMaterials($template, $sub_class);
+        }
         // 生成$count个随机不重复的组合
         $combinations = $this->generateRandomCombinations($sets, $rules, $count);
         if (count($combinations) < $count) {
@@ -43,8 +43,26 @@ class AdminTemplateService
 
     }
 
-    public function getMaterials($template, $class)
+    public function getMaterials($template, $sub_class)
     {
+        // 营销内容的子分类
+        $sub_class_map = [ 
+            'A1' => 11,
+            'A2' => 12,
+            'A4' => 14,
+            'A5' => 15,
+            'A6' => 16,
+            'B1' => 21,
+            'B2' => 22,
+            'B3' => 23,
+            'B6' => 26,
+            'C1' => 31,
+            'C6' => 36,
+            'D1' => 41,
+            'D2' => 42,
+            'D3' => 43,
+            'D6' => 46,
+        ];
         $product_id           = data_get($template, 'product_id');
         $product_format       = data_get($template, 'product_format');
         $product_tag          = data_get($template, 'product_tag');
@@ -52,31 +70,15 @@ class AdminTemplateService
         $range                = data_get($template, 'range');
         $exclude_sub_class    = data_get($template, 'exclude_sub_class');
         $exclude_actor_ids    = data_get($template, 'exclude_actor_ids');
+        if (empty(data_get($sub_class_map, $sub_class))) {
+            return [];
+        }
         //找到符合规则的视频
         $query = AdminMaterial::query()->where('product_id', $product_id)
-                                        ->where('product_format', $product_format)
-                                        ->where('status', 1)
-                                        ->where('screen_type', $screen_type);
-        switch($class) {
-                case 'A':
-                    $query->where('class', 1);
-                    break;
-
-                case 'B':
-                    $query->where('class', 2);
-                    break;
-
-                case 'C':
-                    $query->where('class', 3);
-                    break;
-
-                case 'D':
-                    $query->where('class', 4);
-                    break;
-                default:
-                    $query->where('class', 1);
-                    break;
-        }
+                                       ->where('product_format', $product_format)
+                                       ->where('status', 1)
+                                       ->where('screen_type', $screen_type)
+                                       ->where('sub_class', $sub_class_map[$sub_class]);
         //剔除规则演员
         if (!empty($exclude_actor_ids)) {
             $query->where(function ($q) use ($exclude_actor_ids) {
@@ -90,8 +92,8 @@ class AdminTemplateService
             $query->whereNotIn('sub_class',$exclude_sub_class);
         }
         //D类要剔除投放类型
-        if (!empty($product_tag) && $class == "D") {
-            $query->where('tag', '!=', $product_tag);
+        if (!empty($product_tag) && strpos($sub_class, "D") !== false) {
+            $query->where('tag', $product_tag);
         }
         if ($query->count() == 0) {
             return [];
