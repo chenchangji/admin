@@ -53,7 +53,7 @@
         </a-select>
       </lz-form-item>
       <lz-form-item label="拼接规则" required  prop="class_rules">
-        <a-input placeholder="格式如：A+A+C+D+C+D" v-model="form.class_rules"/>
+        <a-input placeholder="格式如：A1+A2+C1+D1+C2+D2" v-model="form.class_rules"/>
       </lz-form-item>
       <lz-form-item label="素材优先选用时间"  prop="range">
         <a-select v-model="form.range" placeholder="请选择优先选用时间">

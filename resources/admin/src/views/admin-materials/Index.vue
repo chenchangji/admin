@@ -108,6 +108,15 @@ export default {
           label: '标题',
         },
         {
+          field: 'screen_type',
+          label: '横竖屏',
+          type: 'select',  // 指定为下拉框类型
+          options: [      // 定义下拉选项
+            { id: 1, name: '横屏' },
+            { id: 2, name: '竖屏' }
+          ]
+        },
+        {
           field: 'class',
           label: '分类',
           type: 'select',  // 指定为下拉框类型
@@ -237,7 +246,6 @@ export default {
         const params = {
           ...this.$route.query,
           product_id: product_id,
-          page: this.pagination.current,
           sort_field: this.activeSortField,
           sort_order: this.activeSortOrder === 'ascend' ? 'asc' : 'desc'
         };
