@@ -13,7 +13,10 @@ class ComposeVideoController extends Controller
     public function index(ComposeVideoFilter $filter)
     {
         $composeVideos = ComposeVideo::query()
+            ->leftjoin('admin_users', 'compose_videos.creator_id', '=', 'admin_users.id')
+            ->leftjoin('admin_templates', 'compose_videos.template_id', '=', 'admin_templates.id')
             ->filter($filter)
+            ->select('compose_videos.*','admin_users.name', 'admin_templates.class_rules')
             ->orderByDesc('id')
             ->paginate();
 
@@ -22,7 +25,7 @@ class ComposeVideoController extends Controller
 
     public function destroy(ComposeVideo $composeVideo)
     {
-        $composeVideo->delete();
+        $composeVideo->update(['status'=>2]);
         return $this->noContent();
     }
 }

@@ -13,6 +13,7 @@
     >
      <a-table-column title="ID" data-index="id" :width="60"/>
       <a-table-column title="标题" data-index="title"/>
+      <a-table-column title="模板规则" data-index="class_rules"/>
       <a-table-column title="产品" data-index="product_id"  key="product_id">
         <template slot-scope="text">
             {{ getProductLabel(text) }}
@@ -40,6 +41,16 @@
           <span v-else>无视频</span>
         </template>
       </a-table-column>
+      <a-table-column 
+        title="演员" 
+        data-index="actor_ids"
+        key="actor_ids"
+      >
+        <template slot-scope="text">
+          {{ getActorName(text) }}
+        </template>
+      </a-table-column>
+      <a-table-column title="创建人" data-index="name" :width="180"/>
       <a-table-column title="添加时间" data-index="created_at" :width="180"/>
       <a-table-column title="操作" :width="100">
         <template #default="record">
@@ -65,6 +76,9 @@ import {
   destroyComposeVideo,
   getComposeVideos,
 } from '@/api/compose-videos'
+import {
+  getAdminActorList,
+} from '@/api/admin-actors'
 import { removeWhile } from '@/libs/utils'
 
 export default {
@@ -88,10 +102,30 @@ export default {
           field: 'title',
           label: '标题',
         },
+        {
+          field: 'actor',
+          label: '演员',
+          type: 'select',
+          options: [] // 初始为空数组，后续通过接口填充
+        },
+        {
+          field: 'product_id',
+          label: '产品',
+          type: 'select',  // 指定为下拉框类型
+          options: [      // 定义下拉选项
+            { id: 1, name: '舒筋健腰丸' },
+            { id: 2, name: '清血八味片' },
+            { id: 3, name: '咽康' }
+          ]
+        },
       ],
       composeVideo: [],
       page: null,
     }
+  },
+  // 添加生命周期钩子获取演员数据
+  async created() {
+    await this.fetchActorOptions()
   },
   methods: {
     destroyComposeVideo(id) {
@@ -110,10 +144,33 @@ export default {
     },
     getProductFormatLabel(classValue) {
       const classMap = {
-        1: '24片',
-        2: '120片'
+        1: '拆零',
+        2: '大盒',
+        3: '24片',
+        4: '120片',
+        5: '18片',
+        6: '40片',
       };
       return classMap[classValue] || classValue; // 找不到则显示原值
+    },
+    getActorName(ids) {
+      // 获取演员选项配置（包含id-name映射）
+      const actorField = this.search.find(field => field.field === 'actor');
+      const actorOptions = actorField ? actorField.options : [];
+     
+      // 处理空值情况
+      if (!ids || !actorOptions.length) return '';
+     
+      // 标准化ID格式（处理单值/数组/字符串情况）
+      const idList = Array.isArray(ids) ? [...new Set(ids)] : [ids];
+      
+      // 执行名称映射
+      return idList
+        .map(id => {
+          const match = actorOptions.find(opt => opt.id === id);
+          return match ? match.name : `未知演员(${id})`;
+        })
+        .join(', ');
     },
     getScreenTypeLabel(classValue) {
       const classMap = {
@@ -133,6 +190,27 @@ export default {
           </video>
         ),
       });
+    },
+
+    async fetchActorOptions() {
+      try {
+        const response = await getAdminActorList();
+        // 找到actor字段的配置项
+        const actorField = this.search.find(f => f.field === 'actor');
+        
+        if (actorField && Array.isArray(response.data)) {
+          actorField.options = response.data.map(item => ({
+            id: item.id,
+            name: item.name,
+          }));
+        } else {
+          console.warn('演员数据格式异常:', response.data);
+          this.$message.error('演员数据格式异常');
+        }
+      } catch (error) {
+        console.error('获取演员列表失败:', error);
+        this.$message.error('获取演员列表失败');
+      }
     },
 
   },

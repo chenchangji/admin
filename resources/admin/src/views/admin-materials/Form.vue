@@ -329,7 +329,7 @@ export default {
     async fetchActorOptions() {
       try {
         const response = await getAdminActorList(); // 调用API获取数据
-        // 假设接口返回的数据格式为 [{id: 1, name: '营销内容'}, ...]
+        // 假设接口返回的数据格式为 [{id: 1, name: '张三'}, ...]
         this.actorOptions = response.data.map(item => ({
           value: item.id,
           label: item.name,

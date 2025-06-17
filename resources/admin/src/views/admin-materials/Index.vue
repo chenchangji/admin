@@ -48,6 +48,15 @@
           <span v-else>无视频</span>
         </template>
       </a-table-column>
+      <a-table-column 
+        title="演员" 
+        data-index="actor_ids"
+        key="actor_ids"
+      >
+        <template slot-scope="text">
+          {{ getActorName(text) }}
+        </template>
+      </a-table-column>
       <a-table-column title="创建人" data-index="name" :width="180"/>
       <a-table-column 
         title="添加时间" 
@@ -83,6 +92,9 @@ import {
   getAdminMaterials,
   exportAdminMaterials,
 } from '@/api/admin-materials'
+import {
+  getAdminActorList,
+} from '@/api/admin-actors'
 import { removeWhile } from '@/libs/utils'
 import { saveAs } from 'file-saver'
 
@@ -106,6 +118,12 @@ export default {
         {
           field: 'title',
           label: '标题',
+        },
+        {
+          field: 'actor',
+          label: '演员',
+          type: 'select',
+          options: [] // 初始为空数组，后续通过接口填充
         },
         {
           field: 'screen_type',
@@ -163,6 +181,12 @@ export default {
       exportLoading: false, // 导出加载状态
     }
   },
+
+  // 添加生命周期钩子获取演员数据
+  async created() {
+    await this.fetchActorOptions()
+  },
+
   methods: {
     destroyAdminMaterial(id) {
       return async () => {
@@ -215,6 +239,26 @@ export default {
       return subClassMap[subClassValue] || subClassValue; // 找不到则显示原值
     },
 
+    getActorName(ids) {
+      // 获取演员选项配置（包含id-name映射）
+      const actorField = this.search.find(field => field.field === 'actor');
+      const actorOptions = actorField ? actorField.options : [];
+     
+      // 处理空值情况
+      if (!ids || !actorOptions.length) return '';
+     
+      // 标准化ID格式（处理单值/数组/字符串情况）
+      const idList = Array.isArray(ids) ? ids : [ids];
+      
+      // 执行名称映射
+      return idList
+        .map(id => {
+          const match = actorOptions.find(opt => opt.id === id);
+          return match ? match.name : `未知演员(${id})`;
+        })
+        .join(', ');
+    },
+
     handleTableChange(pagination, filters, sorter) {
       // 处理分页变化
       if (pagination) {
@@ -253,6 +297,27 @@ export default {
         const { data } = await getAdminMaterials(params);
         this.adminMaterial = data.data;
         this.page = data.meta;
+    },
+
+    async fetchActorOptions() {
+      try {
+        const response = await getAdminActorList();
+        // 找到actor字段的配置项
+        const actorField = this.search.find(f => f.field === 'actor');
+        
+        if (actorField && Array.isArray(response.data)) {
+          actorField.options = response.data.map(item => ({
+            id: item.id,
+            name: item.name,
+          }));
+        } else {
+          console.warn('演员数据格式异常:', response.data);
+          this.$message.error('演员数据格式异常');
+        }
+      } catch (error) {
+        console.error('获取演员列表失败:', error);
+        this.$message.error('获取演员列表失败');
+      }
     },
 
     // 新增导出方法

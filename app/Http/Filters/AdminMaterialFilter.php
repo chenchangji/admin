@@ -15,6 +15,7 @@ class AdminMaterialFilter extends Filter
         'sub_class',
         'product_id',
         'screen_type',
+        'actor',
     ];
 
     protected function title($val)
@@ -41,9 +42,14 @@ class AdminMaterialFilter extends Filter
     {
         $this->builder->where('product_id', $val);
     }
-    
+
     protected function screenType($val)
     {
         $this->builder->where('screen_type', $val);
+    }
+
+    protected function actor($val)
+    {
+        $this->builder->whereJsonContains('actor_ids', (int) $val);
     }
 }

@@ -78,8 +78,9 @@
       <a-form-item label="生成数量">
         <a-input-number 
           v-model:value="generateCount" 
-          :min="1" 
-          style="width: 100%"
+          :min="1"
+          :max="30" 
+           style="width: 100%"
         />
       </a-form-item>
     </a-modal>

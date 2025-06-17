@@ -172,6 +172,12 @@ class AdminTemplateService
         $video_data = [];
         $date = date('Y-m-d');
         $i = 1;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $creator_id = $user->id;
+        }else{
+            $creator_id = 1;
+        }
         foreach ($combinations as $key => $combination) {
             try {
                 //1. 初始化服务
@@ -203,6 +209,7 @@ class AdminTemplateService
                     'actor_ids'      =>json_encode($actor_ids),
                     'material_ids'   => json_encode(explode('-', $key)),
                     'status'         => 0,
+                    'creator_id'     => $creator_id,
                     'created_at'     => date('Y-m-d H:i:s'),
                     'updated_at'     => date('Y-m-d H:i:s'),
                 ];
