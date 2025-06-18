@@ -196,12 +196,26 @@ export default {
     },
 
     handlePlayVideo(url) {
-      // 使用弹窗播放视频
       this.$info({
         title: '视频播放',
-        width: '60%',
+        width: '450px', // 固定宽度
+        bodyStyle: {
+          height: '300px', // 固定内容区域高度
+          padding: '0',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        },
         content: (
-          <video controls autoplay style="width: 100%">
+          <video 
+            controls 
+            autoplay 
+            style={{ 
+              width: '100%', 
+              height: '100%',
+              objectFit: 'contain' // 保持视频比例
+            }}
+          >
             <source src={url} type="video/mp4" />
           </video>
         ),
