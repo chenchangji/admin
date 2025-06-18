@@ -20,12 +20,13 @@
             {{ getProductLabel(text) }}
         </template>
       </a-table-column>
-       <a-table-column title="规格" data-index="product_format" key="product_format">
-      <template slot-scope="text">
-            {{ getProductFormatLabel(text) }}
-        </template>
+
+      <a-table-column title="规格" data-index="product_format" key="product_format" :width="80">
+          <template slot-scope="text">
+                {{ getProductFormatLabel(text) }}
+          </template>
       </a-table-column>
-      <a-table-column title="横竖屏" data-index="screen_type" key="screen_type">
+      <a-table-column title="横竖屏" data-index="screen_type" key="screen_type" :width="80">
       <template slot-scope="text">
             {{ getScreenTypeLabel(text) }}
         </template>
@@ -51,8 +52,8 @@
           {{ getActorName(text) }}
         </template>
       </a-table-column>
-      <a-table-column title="创建人" data-index="name" :width="180"/>
-      <a-table-column title="添加时间" data-index="created_at" :width="180"/>
+      <a-table-column title="创建人" data-index="name" :width="80"/>
+      <a-table-column title="添加时间" data-index="created_at" :width="120"/>
       <a-table-column title="操作" :width="100">
         <template #default="record">
           <space>
