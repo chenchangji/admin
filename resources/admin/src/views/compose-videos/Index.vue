@@ -14,6 +14,7 @@
      <a-table-column title="ID" data-index="id" :width="60"/>
       <a-table-column title="标题" data-index="title"/>
       <a-table-column title="模板规则" data-index="class_rules"/>
+      <a-table-column title="原始素材" data-index="material_titles" :width="200"/>
       <a-table-column title="产品" data-index="product_id"  key="product_id">
         <template slot-scope="text">
             {{ getProductLabel(text) }}
