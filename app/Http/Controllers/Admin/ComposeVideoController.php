@@ -15,6 +15,7 @@ class ComposeVideoController extends Controller
         $composeVideos = ComposeVideo::query()
             ->leftjoin('admin_users', 'compose_videos.creator_id', '=', 'admin_users.id')
             ->leftjoin('admin_templates', 'compose_videos.template_id', '=', 'admin_templates.id')
+            ->where('compose_videos.status',1)
             ->filter($filter)
             ->select('compose_videos.*','admin_users.name', 'admin_templates.class_rules')
             ->orderByDesc('id')

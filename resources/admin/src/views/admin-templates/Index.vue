@@ -158,7 +158,11 @@ export default {
     getProductFormatLabel(classValue) {
       const classMap = {
         1: '24片',
-        2: '120片'
+        2: '120片',
+        3: '24片',
+        4: '120片',
+        5: '18片',
+        6: '40片',
       };
       return classMap[classValue] || classValue; // 找不到则显示原值
     },

@@ -196,8 +196,10 @@ class AdminTemplateService
                     $job_ids[]  =$job_id;
                 }
                 $actor_ids=[];
+                $material_titles = [];
                 foreach ($combination as  $v) {
                     $actor_ids = array_merge($actor_ids, $v['actor_ids']);
+                    $material_titles = array_merge($material_titles, $v['title']);
                 }
                 $video_data[] = [
                     'title'          => $date.'-'.$template['title'].'-'.$i,
@@ -208,6 +210,7 @@ class AdminTemplateService
                     'screen_type'    =>$template['screen_type'],
                     'actor_ids'      =>json_encode($actor_ids),
                     'material_ids'   => json_encode(explode('-', $key)),
+                    'material_titles'   => implode('+',$material_titles),
                     'status'         => 0,
                     'creator_id'     => $creator_id,
                     'created_at'     => date('Y-m-d H:i:s'),
