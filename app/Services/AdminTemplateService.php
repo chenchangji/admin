@@ -199,7 +199,7 @@ class AdminTemplateService
                 $material_titles = [];
                 foreach ($combination as  $v) {
                     $actor_ids = array_merge($actor_ids, $v['actor_ids']);
-                    $material_titles = array_merge($material_titles, $v['title']);
+                    $material_titles[] = $v['title'];
                 }
                 $video_data[] = [
                     'title'          => $date.'-'.$template['title'].'-'.$i,
