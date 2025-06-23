@@ -19,10 +19,10 @@ class AdminTemplateService
         //获取创建模板配置
         $template = AdminTemplate::find($data['template_id'])->toArray();
         //小类规则，类似：A1+B2+C3+D4
-        $rules   = explode('+', $template['class_rules']);
+        $rules   = json_decode($template['class_rules']);
         $sets = [];
-        foreach ($rules as  $sub_class) {
-            $sets[$sub_class] = $this->getMaterials($template, $sub_class);
+        foreach ($rules as  $k => $rule) {
+            $sets[$k] = $this->getMaterials($template, $rule);
         }
         // 生成$count个随机不重复的组合
         $combinations = $this->generateRandomCombinations($sets, $rules, $count);
@@ -43,26 +43,11 @@ class AdminTemplateService
 
     }
 
-    public function getMaterials($template, $sub_class)
+    public function getMaterials($template, $rule)
     {
-        // 营销内容的子分类
-        $sub_class_map = [ 
-            'A1' => 11,
-            'A2' => 12,
-            'A4' => 14,
-            'A5' => 15,
-            'A6' => 16,
-            'B1' => 21,
-            'B2' => 22,
-            'B3' => 23,
-            'B6' => 26,
-            'C1' => 31,
-            'C6' => 36,
-            'D1' => 41,
-            'D2' => 42,
-            'D3' => 43,
-            'D6' => 46,
-        ];
+        $class                = data_get($rule, 'class');
+        $sub_class            = data_get($rule, 'sub_class');
+        $actor_ids            = data_get($rule, 'actor_ids');
         $product_id           = data_get($template, 'product_id');
         $product_format       = data_get($template, 'product_format');
         $product_tag          = data_get($template, 'product_tag');
@@ -70,15 +55,25 @@ class AdminTemplateService
         $range                = data_get($template, 'range');
         $exclude_sub_class    = data_get($template, 'exclude_sub_class');
         $exclude_actor_ids    = data_get($template, 'exclude_actor_ids');
-        if (empty(data_get($sub_class_map, $sub_class))) {
-            return [];
-        }
         //找到符合规则的视频
         $query = AdminMaterial::query()->where('product_id', $product_id)
                                        ->where('product_format', $product_format)
                                        ->where('status', 1)
-                                       ->where('screen_type', $screen_type)
-                                       ->where('sub_class', $sub_class_map[$sub_class]);
+                                       ->where('screen_type', $screen_type);
+        if (!empty($class)) {
+            $query->where('class', $class);
+        }
+        if (!empty($sub_class)) {
+            $query->where('sub_class', $sub_class);
+        }
+        //指定演员
+        if (!empty($actor_ids)) {
+            $query->where(function ($q) use ($actor_ids) {
+                foreach ($actor_ids as $id) {
+                    $q->orWhereRaw("JSON_CONTAINS(actor_ids, ?)", [json_encode($id)]);
+                }
+            });
+        }
         //剔除规则演员
         if (!empty($exclude_actor_ids)) {
             $query->where(function ($q) use ($exclude_actor_ids) {
@@ -117,7 +112,7 @@ class AdminTemplateService
                     $date = date('Y-m-d H:i:s', strtotime('-30 days'));
                     break;
             }
-            $range_query->where('created_at', '>', $date);
+            $range_query->where('updated_at', '>', $date);
         }
         //如果在优先选择的时间范围内有素材，则优先使用时间范围内素材，否则去掉优先时间筛选
         if ($range_query->count() > 0) {
@@ -131,24 +126,27 @@ class AdminTemplateService
         $result = [];
         $attempts = 0;
         $maxAttempts = $requiredCount * 10; // 增加尝试次数，避免无限循环
-
+        $collection = $sets; // 复制原始集合，避免修改原数据
         while (count($result) < $requiredCount && $attempts < $maxAttempts) {
             $attempts++;
-            $collection = $sets; // 复制原始集合，避免修改原数据
             $materials = [];
             $ids = [];
             $actor_ids = []; // 初始化
 
             // 按规则选择元素
-            foreach ($rules as $rule) {
-                if (!isset($collection[$rule]) || empty($collection[$rule])) {
+            foreach ($rules as $k => $rule) {
+                if (!isset($collection[$k]) || empty($collection[$k])) {
                     continue 2; // 跳过本次尝试，进入下一次循环
                 }
 
-                $randomKey = array_rand($collection[$rule]);
-                $material = $collection[$rule][$randomKey];
+                $randomKey = array_rand($collection[$k]);
+                $material = $collection[$k][$randomKey];
                 
-                unset($collection[$rule][$randomKey]); // 避免重复选择
+                unset($collection[$k][$randomKey]); // 避免重复选择
+                //如果可选的素材变为0，则重新填充
+                if (count($collection[$k]) <= 0) {
+                    $collection[$k] = $sets[$k];
+                }
                 $materials[] = $material;
                 $ids[] = $material['id'];
                 $actor_ids = array_merge($actor_ids, $material['actor_ids']);
@@ -158,7 +156,7 @@ class AdminTemplateService
             $key = implode('-', $ids);
 
             // 检查组合是否有效且不重复
-            if (!empty($materials) && count($actor_ids) >= 3 && !isset($result[$key])) {
+            if (!empty($materials)  && !isset($result[$key])) {
                 $result[$key] = $materials;
             }
         }
@@ -189,7 +187,7 @@ class AdminTemplateService
                 $outputObject = 'output/stitched-video.mp4'; // 输出文件路径
 
                 // 5. 提交拼接作业 
-                $response = $videoStitcher->submitStitchingJob($video_urls, $key);
+                $response = $videoStitcher->submitStitchingJob($video_urls, $date.'-'.$template['title'].'-'.$i);
                 // 6. 获取作业ID
                 $job_id = data_get($response, 'body.jobResultList.jobResult.0.job.jobId');
                 if (!empty($job_id)) {

@@ -2,6 +2,16 @@
   <page-content>
     <space class="my-1">
       <search-form :fields="search"/>
+
+      <!-- 下载按钮 -->
+      <a-button 
+        type="primary" 
+        @click="handleDownload"
+        :disabled="selectedVideos.length === 0"
+        style="margin-left: 12px"
+      >
+        下载选中视频（{{ selectedVideos.length }}）
+      </a-button>
     </space>
 
     <a-table
@@ -11,7 +21,22 @@
       :scroll="{ x: 600 }"
       :pagination="false"
     >
-     <a-table-column title="ID" data-index="id" :width="60"/>
+     <!-- 新增选择列 -->
+      <a-table-column title="选择" :width="60">
+        <template #header>
+          <a-checkbox
+            :checked="isAllSelected"
+            @change="e => handleSelectAll(e)"
+          />
+        </template>
+        <template #default="record">
+          <a-checkbox
+            :checked="selectedVideos.includes(record.id)"
+            @change="checked => handleCheckboxChange(record.id, checked.target.checked)"
+          />
+        </template>
+      </a-table-column>
+      <a-table-column title="ID" data-index="id" :width="60"/>
       <a-table-column title="标题" data-index="title"/>
       <a-table-column title="模板规则" data-index="class_rules"/>
       <a-table-column title="原始素材" data-index="material_titles" :width="200"/>
@@ -121,6 +146,8 @@ export default {
           ]
         },
       ],
+      selectedVideos: [],
+      downloadVideos: [],
       composeVideo: [],
       page: null,
     }
@@ -129,7 +156,40 @@ export default {
   async created() {
     await this.fetchActorOptions()
   },
+
+  computed: {
+    // 新增计算属性判断全选状态
+    isAllSelected() {
+      const currentPageIds = this.composeVideo.map(item => item.id);
+      return currentPageIds.length > 0 && 
+             currentPageIds.every(id => this.selectedVideos.includes(id));
+    }
+  },
   methods: {
+    // 新增全选处理方法
+    handleSelectAll(e) {
+      const currentPageIds = this.composeVideo.map(item => item.id);
+      if (e.target.checked) {
+        // 全选：添加当前页所有未选中的ID
+        const newIds = currentPageIds.filter(
+          id => !this.selectedVideos.includes(id)
+        );
+        this.selectedVideos = [...new Set([...this.selectedVideos, ...newIds])];
+      } else {
+        // 取消全选：移除当前页所有ID
+        this.selectedVideos = this.selectedVideos.filter(
+          id => !currentPageIds.includes(id)
+        );
+      }
+    },
+    // 修改原有复选框处理方法
+    handleCheckboxChange(id, checked) {
+      if (checked) {
+        this.selectedVideos.push(id)
+      } else {
+        this.selectedVideos = this.selectedVideos.filter(item => item !== id)
+      }
+    },
     destroyComposeVideo(id) {
       return async () => {
         await destroyComposeVideo(id)
@@ -227,6 +287,71 @@ export default {
         console.error('获取演员列表失败:', error);
         this.$message.error('获取演员列表失败');
       }
+    },
+
+    // 新增复选框处理方法
+    handleCheckboxChange(id, checked) {
+      if (checked) {
+        this.selectedVideos.push(id)
+      } else {
+        this.selectedVideos = this.selectedVideos.filter(item => item !== id)
+      }
+    },
+
+    async handleDownload() {
+      if (this.selectedVideos.length > 20){
+          this.$message.warning('请选择最多20个视频进行下载');
+          return;
+      }
+
+      try {
+
+        
+        const downloadVideos = this.selectedVideos
+          .map(videoId => {
+            const video = this.composeVideo.find(v => v.id === videoId);
+            if (!video) return null;     
+            if (!video.url) {
+              console.warn(`视频 ${videoId}(${video.title}) 缺少下载地址`);
+              return null;
+            }
+     
+            return video;
+          })
+          .filter(Boolean);
+        // 批量下载处理
+        this.downloadVideos = downloadVideos; 
+
+        for (let i = 0; i < this.downloadVideos.length; i++) {
+          const video = this.downloadVideos[i];
+          
+          // 获取下载链接
+          const downloadUrl = video.url;
+          
+          // 创建隐藏链接触发下载
+          this.createDownloadLink(downloadUrl, 'test001');
+          
+          // 添加延迟避免浏览器并发限制
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+
+        this.$message.success(`已添加 ${this.selectedVideos.length} 个下载任务`);
+      } catch (error) {
+        this.$message.error(`下载失败: ${error.message}`);
+      } finally {
+        hideLoading && hideLoading();
+      }
+    },
+
+    // 创建下载链接并触发点击
+    createDownloadLink(url, fileName) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'video'; // 设置默认文件名
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     },
 
   },

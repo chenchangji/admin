@@ -59,11 +59,11 @@
       </a-table-column>
       <a-table-column title="创建人" data-index="name" :width="180"/>
       <a-table-column 
-        title="添加时间" 
-        data-index="created_at" 
+        title="更新时间" 
+        data-index="updated_at" 
         :width="180"
         :sorter="true"
-        :sortOrder="activeSortField === 'created_at' ? activeSortOrder : undefined"
+        :sortOrder="activeSortField === 'updated_at' ? activeSortOrder : undefined"
         :sortDirections="['ascend', 'descend']"
       />
       <a-table-column title="操作" :width="100">
@@ -170,10 +170,10 @@ export default {
       ],
       adminMaterial: [],
       page: null,
-      sortField: 'created_at',      // 新增：默认排序字段
+      sortField: 'updated_at',      // 新增：默认排序字段
       sortOrder: 'asc',           // 新增：默认排序方向
-      activeSortField: 'created_at',  // 当前排序字段
-      activeSortOrder: 'descend',     // 当前排序方向 ('ascend'|'descend')
+      activeSortField: '',  // 当前排序字段
+      activeSortOrder: '',     // 当前排序方向 ('ascend'|'descend')
       pagination: {                // 新增：分页控制
         current: 1,
         pageSize: 10
@@ -285,7 +285,7 @@ export default {
         this.activeSortOrder = sorter.order;
       } else {
         // 重置为默认排序
-        this.activeSortField = 'created_at';
+        this.activeSortField = 'updated_at';
         this.activeSortOrder = 'descend';
       }
       

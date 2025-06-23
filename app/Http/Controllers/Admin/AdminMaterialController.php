@@ -21,9 +21,10 @@ class AdminMaterialController extends Controller
             ->where('admin_materials.status',1)
             ->filter($filter)
             ->select('admin_materials.*','admin_users.name');
-            // dd($request->sort_order);
-        if ($request->sort_field === 'created_at') {
-            $adminMaterials = $adminMaterials->orderBy('created_at', $request->sort_order ?? 'desc');
+        if ($request->sort_field === 'updated_at') {
+            $adminMaterials = $adminMaterials->orderBy('updated_at', $request->sort_order ?? 'desc');
+        }else{
+            $adminMaterials = $adminMaterials->orderBy('id', 'desc');
         }
         $adminMaterials = $adminMaterials->paginate();
 

@@ -52,9 +52,74 @@
           <a-select-option :value="2">加粉</a-select-option>
         </a-select>
       </lz-form-item>
-      <lz-form-item label="拼接规则" required  prop="class_rules">
-        <a-input placeholder="格式如：A1+A2+C1+D1+C2+D2" v-model="form.class_rules"/>
+      
+      <lz-form-item label="拼接规则" required prop="class_rules">
+        <div v-for="(rule, index) in class_rules" :key="index" class="rule-item">
+          <a-select
+            v-model="rule.classValue"
+            @change="(value) => handleClassChange(index, value)"
+            placeholder="请选择大类"
+            style="width: 180px; margin-right: 8px;"
+          >
+            <a-select-option 
+              v-for="item in classOptions"
+              :key="item.value"
+              :value="item.value"
+            >
+              {{ item.label }}
+            </a-select-option>
+          </a-select>
+  
+          <a-select
+            v-model="rule.subClassValue"
+            @change="(value) => handleSubClassChange(index, value)"
+            placeholder="请选择子类"
+            :disabled="!rule.classValue"
+            style="width: 180px; margin-right: 8px;"
+          >
+            <a-select-option
+              v-for="sub in getFilteredSubClasses(rule.classValue)"
+              :key="sub.value"
+              :value="sub.value"
+            >
+              {{ sub.label }}
+            </a-select-option>
+          </a-select>
+  
+          <a-select
+            v-model="rule.actorValue"
+            placeholder="请选择演员"
+            style="width: 220px; margin-right: 8px;"
+            mode="multiple"
+          >
+            <a-select-option
+              v-for="actor in actorOptions"
+              :key="actor.value"
+              :value="actor.value"
+            >
+              {{ actor.label }}
+            </a-select-option>
+          </a-select>
+          
+          <a-button
+            v-if="class_rules.length > 1"
+            @click="removeRule(index)"
+            type="danger"
+            icon="delete"
+            style="margin-left: 8px"
+          />
+        </div>
+        
+        <a-button
+          @click="addRule"
+          type="dashed"
+          icon="plus"
+          style="margin-top: 10px"
+        >
+          添加素材
+        </a-button>
       </lz-form-item>
+
       <lz-form-item label="素材优先选用时间"  prop="range">
         <a-select v-model="form.range" placeholder="请选择优先选用时间">
           <a-select-option :value="1">7天内</a-select-option>
@@ -163,7 +228,43 @@ export default {
         ]
       },
       // 当前可选的二级子分类（初始为空）
-      productFormatOptions: []
+      productFormatOptions: [],
+      classOptions: [
+        { label: 'A类-营销内容', value: '1' },
+        { label: 'B类-痛点/症状', value: '2' },
+        { label: 'C类-产品背书', value: '3' },
+        { label: 'D类-引导购买', value: '4' }
+      ],
+      // 二级子分类映射（根据一级分类动态变化）
+      subclassMap: {
+        1: [ // 营销内容的子分类
+          { value: 11, label: 'A1-营销内容' },
+          { value: 12, label: 'A2-价格营销' },
+          { value: 14, label: 'A4-营销内容-合规' },
+          { value: 15, label: 'A5-价格营销-合规' },
+          { value: 16, label: 'A6-旧素材混剪' }
+        ],
+        2: [ // 痛点/症状的子分类
+          { value: 21, label: 'B1-症状代入' },
+          { value: 22, label: 'B2-疾病科普' },
+          { value: 23, label: 'B3-病理' },
+          { value: 26, label: 'B6-旧素材混剪' }
+        ],
+        3: [ // 产品背书的子分类
+          { value: 31, label: 'C1-产品相关' },
+          { value: 36, label: 'C6-旧素材混剪' }
+        ],
+        4: [ // 引导购买的子分类
+          { value: 41, label: 'D1-价格优惠' },
+          { value: 42, label: 'D2-厂家直发' },
+          { value: 43, label: 'D3-厂家活动' },
+          { value: 44, label: 'D6-旧素材混剪' }
+        ]
+      },
+      class_rules: [
+        { classValue: null, subClassValue: null, actorValue: [] }
+      ],
+
     }
   },
 
@@ -178,13 +279,29 @@ export default {
       if ($form.realEditMode) {
         ({ data } = await editAdminTemplate($form.resourceId))
         this.handleProductChange(data.product_id);
+        // 回填规则数据
+        if (data.class_rules) {
+          try {
+            const rules = JSON.parse(data.class_rules);
+            this.class_rules = rules.map(rule => ({
+              classValue: rule.class,
+              subClassValue: rule.sub_class,
+              actorValue: rule.actor_ids || []
+            }));
+          } catch (e) {
+            console.error('规则解析失败', e);
+            this.class_rules = [{ classValue: null, subClassValue: null, actorValue: [] }];
+          }
+        }
       } else {
-        ({ data } = await createAdminTemplate())
+        ({ data } = await createAdminTemplate());
+        this.class_rules = [{ classValue: null, subClassValue: null, actorValue: [] }];
       }
 
       return data
     },
     async onSubmit($form) {
+      this.prepareFormData(); // 转换规则数据
       if ($form.realEditMode) {
         await updateAdminTemplate($form.resourceId, this.form)
       } else {
@@ -210,6 +327,96 @@ export default {
       this.form.product_format = undefined; // 清空规格选择
       this.productFormatOptions = this.productFormatMap[value] || []; // 更新规格选项
     },
+
+    // 获取过滤后的子类
+    getFilteredSubClasses(classValue) {
+      if (!classValue) return [];
+      return this.subclassMap[classValue] || [];
+    },
+    
+    // 添加新规则
+    addRule() {
+      if (this.class_rules.length >= 8 ) {
+        this.$message.warning('至多添加八条规则');
+        return;
+      }
+      this.class_rules.push({
+        classValue: null,
+        subClassValue: null,
+        actorValue: []
+      });
+    },
+    
+    // 移除规则
+    removeRule(index) {
+      if (this.class_rules.length <= 4) {
+        this.$message.warning('至少保留四条规则');
+        return;
+      }
+      this.class_rules.splice(index, 1);
+    },
+    
+    // 大类变更处理
+    handleClassChange(index, value) {
+      const rule = this.class_rules[index];
+      rule.subClassValue = null;
+      rule.actorValue = [];
+    },
+    
+    // 子类变更处理
+    handleSubClassChange(index, value) {
+      const rule = this.class_rules[index];
+      rule.actorValue = [];
+    },
+    
+    // 在提交前转换规则格式
+    prepareFormData() {
+      // 转换规则为后端需要的格式
+      this.form.class_rules = JSON.stringify(
+        this.class_rules.map(rule => ({
+          class: rule.classValue,
+          sub_class: rule.subClassValue,
+          actor_ids: rule.actorValue
+        }))
+      );
+    },
+    // 编辑时回填数据
+    async getData($form) {
+      let data
+
+      if ($form.realEditMode) {
+        ({ data } = await editAdminTemplate($form.resourceId));
+        this.handleProductChange(data.product_id);
+        
+        // 回填规则数据
+        if (data.class_rules) {
+          try {
+            const rules = JSON.parse(data.class_rules);
+            this.class_rules = rules.map(rule => ({
+              classValue: rule.class,
+              subClassValue: rule.sub_class,
+              actorValue: rule.actor_ids || []
+            }));
+          } catch (e) {
+            console.error('规则解析失败', e);
+            this.class_rules = [{ classValue: null, subClassValue: null, actorValue: [] }];
+          }
+        }
+      } else {
+        ({ data } = await createAdminTemplate());
+        this.class_rules = [{ classValue: null, subClassValue: null, actorValue: [] }];
+      }
+
+      return data;
+    }
   },
 }
 </script>
+
+<style scoped>
+.rule-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+</style>
