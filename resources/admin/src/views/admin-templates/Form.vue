@@ -116,7 +116,7 @@
           icon="plus"
           style="margin-top: 10px"
         >
-          添加素材
+          添加
         </a-button>
       </lz-form-item>
 

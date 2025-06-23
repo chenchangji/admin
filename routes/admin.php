@@ -43,7 +43,7 @@ Route::prefix('admin-api')
             Route::resource('config-categories', C\ConfigCategoryController::class)->except(['show', 'create']);
 
             Route::resource('compose-videos', C\ComposeVideoController::class)->except(['show']);
-
+            Route::post('compose-videos/download/log', [C\ComposeVideoController::class, 'downloadLog']);
             // 清除并缓存配置
             Route::post('configs/cache', [C\ConfigController::class, 'cache'])->name('configs.cache');
             // 获取后台路由配置，会做权限筛选，用来生成前端菜单和路由

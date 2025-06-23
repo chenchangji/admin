@@ -7,6 +7,7 @@ use App\Models\ComposeVideo;
 use App\Http\Requests\ComposeVideoRequest;
 use App\Http\Resources\ComposeVideoResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ComposeVideoController extends Controller
 {
@@ -27,6 +28,15 @@ class ComposeVideoController extends Controller
     public function destroy(ComposeVideo $composeVideo)
     {
         $composeVideo->update(['status'=>2]);
+        return $this->noContent();
+    }
+
+    public function downloadLog(Request $request)
+    {
+        $ids = $request->all();
+        ComposeVideo::query()->whereIn('id', $ids)->update([
+             'download_count' => DB::raw('download_count + 1')
+         ]);
         return $this->noContent();
     }
 }

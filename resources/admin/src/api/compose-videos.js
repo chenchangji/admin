@@ -23,3 +23,7 @@ export function getComposeVideos(params) {
 export function destroyComposeVideo(id) {
   return Request.delete(`compose-videos/${id}`)
 }
+
+export function downloadLog(data) {
+  return Request.post('compose-videos/download/log', data)
+}

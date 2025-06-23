@@ -38,7 +38,6 @@
       </a-table-column>
       <a-table-column title="ID" data-index="id" :width="60"/>
       <a-table-column title="标题" data-index="title"/>
-      <a-table-column title="模板规则" data-index="class_rules"/>
       <a-table-column title="原始素材" data-index="material_titles" :width="200"/>
       <a-table-column title="产品" data-index="product_id"  key="product_id">
         <template slot-scope="text">
@@ -77,6 +76,7 @@
           {{ getActorName(text) }}
         </template>
       </a-table-column>
+      <a-table-column title="下载次数" data-index="download_count" :width="80"/>
       <a-table-column title="创建人" data-index="name" :width="80"/>
       <a-table-column title="添加时间" data-index="created_at" :width="120"/>
       <a-table-column title="操作" :width="100">
@@ -102,6 +102,7 @@ import Space from '@c/Space'
 import {
   destroyComposeVideo,
   getComposeVideos,
+  downloadLog,
 } from '@/api/compose-videos'
 import {
   getAdminActorList,
@@ -306,7 +307,6 @@ export default {
 
       try {
 
-        
         const downloadVideos = this.selectedVideos
           .map(videoId => {
             const video = this.composeVideo.find(v => v.id === videoId);
@@ -329,18 +329,16 @@ export default {
           const downloadUrl = video.url;
           
           // 创建隐藏链接触发下载
-          this.createDownloadLink(downloadUrl, 'test001');
+          this.createDownloadLink(downloadUrl, video.title);
           
           // 添加延迟避免浏览器并发限制
           await new Promise(resolve => setTimeout(resolve, 300));
         }
-
+        await downloadLog(this.selectedVideos);
         this.$message.success(`已添加 ${this.selectedVideos.length} 个下载任务`);
       } catch (error) {
         this.$message.error(`下载失败: ${error.message}`);
-      } finally {
-        hideLoading && hideLoading();
-      }
+      } 
     },
 
     // 创建下载链接并触发点击
