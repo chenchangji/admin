@@ -40,7 +40,7 @@
         <template #default="record">
           <div v-if="record.url" style="cursor: pointer" @click="handlePlayVideo(record.url)">
             <img
-              :width="120"
+              :width="60"
               :src="record.video_cover_url || 'placeholder-image-url'"
             />
             <div style="margin-top: 4px; font-size: 12px">点击播放</div>

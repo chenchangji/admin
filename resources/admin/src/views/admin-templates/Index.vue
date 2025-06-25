@@ -143,7 +143,7 @@ export default {
         this.$message.success('视频生成任务已提交')
         this.closeGenerateDialog()
       } catch (error) {
-        this.$message.error('生成失败，请重试')
+        this.$message.error('符合条件素材不足，请添加素材或确认规则！')
         console.error('生成视频失败:', error)
       }
     },

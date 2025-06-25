@@ -27,3 +27,7 @@ export function destroyComposeVideo(id) {
 export function downloadLog(data) {
   return Request.post('compose-videos/download/log', data)
 }
+
+export function updateVideoScore(data) {
+  return Request.post(`compose-videos/updateScore`, data)
+}

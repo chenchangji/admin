@@ -39,4 +39,13 @@ class ComposeVideoController extends Controller
          ]);
         return $this->noContent();
     }
+
+    public function updateScore(Request $request)
+    {
+        $post = $request->all();
+        ComposeVideo::query()->where('id', $post['id'])->update([
+             'score' => $post['score']
+         ]);
+        return $this->noContent();
+    }
 }

@@ -39,7 +39,7 @@
       <a-table-column title="ID" data-index="id" :width="60"/>
       <a-table-column title="标题" data-index="title"/>
       <a-table-column title="原始素材" data-index="material_titles" :width="200"/>
-      <a-table-column title="产品" data-index="product_id"  key="product_id">
+      <!-- <a-table-column title="产品" data-index="product_id"  key="product_id">
         <template slot-scope="text">
             {{ getProductLabel(text) }}
         </template>
@@ -55,11 +55,12 @@
             {{ getScreenTypeLabel(text) }}
         </template>
       </a-table-column>
-      <a-table-column title="视频" key="url">
+      -->
+      <a-table-column title="视频" key="url" :width="120">
         <template #default="record">
           <div v-if="record.url" style="cursor: pointer" @click="handlePlayVideo(record.url)">
             <img
-              :width="120"
+              :width="60"
               :src="record.video_cover_url || 'placeholder-image-url'"
             />
             <div style="margin-top: 4px; font-size: 12px">点击播放</div>
@@ -71,12 +72,26 @@
         title="演员" 
         data-index="actor_ids"
         key="actor_ids"
+        :width="200"
       >
         <template slot-scope="text">
           {{ getActorName(text) }}
         </template>
       </a-table-column>
+      
+      <a-table-column title="评分" key="score" :width="180">
+        <template #default="record">
+          <a-rate
+            :value="record.score"
+            :count="5"
+            allow-half
+            @change="value => handleRateChange(record.id, value)"
+          />
+        </template>
+      </a-table-column>
+
       <a-table-column title="下载次数" data-index="download_count" :width="80"/>
+
       <a-table-column title="创建人" data-index="name" :width="80"/>
       <a-table-column title="添加时间" data-index="created_at" :width="120"/>
       <a-table-column title="操作" :width="100">
@@ -99,10 +114,12 @@ import LzPopconfirm from '@c/LzPopconfirm'
 import PageContent from '@c/PageContent'
 import SearchForm from '@c/SearchForm'
 import Space from '@c/Space'
+import { Rate } from 'ant-design-vue'
 import {
   destroyComposeVideo,
   getComposeVideos,
   downloadLog,
+  updateVideoScore,
 } from '@/api/compose-videos'
 import {
   getAdminActorList,
@@ -118,6 +135,7 @@ export default {
     LzPagination,
     Space,
     SearchForm,
+    ARate: Rate,
   },
   data() {
     return {
@@ -350,6 +368,26 @@ export default {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    },
+
+    async handleRateChange(videoId, newScore) {
+      try {
+        // 这里调用评分接口（需要根据实际API调整）
+        await updateVideoScore({id: videoId, score: newScore })
+        
+        // 更新本地评分显示
+        const videoIndex = this.composeVideo.findIndex(v => v.id === videoId)
+        if (videoIndex > -1) {
+          this.$set(this.composeVideo, videoIndex, {
+            ...this.composeVideo[videoIndex],
+            score: newScore
+          })
+        }
+        
+        this.$message.success('评分更新成功')
+      } catch (error) {
+        this.$message.error('评分更新失败')
+      }
     },
 
   },
