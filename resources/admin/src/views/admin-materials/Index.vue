@@ -36,7 +36,7 @@
           {{ getSubClassLabel(text) }}
         </template>
       </a-table-column>
-      <a-table-column title="视频" key="url">
+      <a-table-column title="视频" key="url" :width="120">
         <template #default="record">
           <div v-if="record.url" style="cursor: pointer" @click="handlePlayVideo(record.url)">
             <img

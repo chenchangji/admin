@@ -27,3 +27,15 @@ export function destroyAdminMaterial(id) {
 export function exportAdminMaterials(params) {
   return Request.get('admin-materials/export', { params })
 }
+
+export function getCountByClass() {
+  return Request.get('admin-materials/getCountByClass')
+}
+
+export function getCountByProduct() {
+  return Request.get('admin-materials/getCountByProduct')
+}
+
+export function getVideoCount() {
+  return Request.get('admin-materials/getVideoCount')
+}

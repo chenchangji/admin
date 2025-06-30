@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Filters\AdminMaterialFilter;
 use App\Models\AdminMaterial;
+use App\Models\ComposeVideo;
 use App\Http\Requests\AdminMaterialRequest;
 use App\Http\Resources\AdminMaterialResource;
 use App\Exports\AdminMaterialsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
-
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class AdminMaterialController extends Controller
@@ -99,6 +101,73 @@ class AdminMaterialController extends Controller
             // 返回错误页面而不是JSON
             return back()->withErrors('导出失败: ' . $e->getMessage());
         }
+    }
+
+    public function getCountByClass()
+    {
+        $data = AdminMaterial::select( \DB::raw('COUNT(*) as total'))
+                    ->where('status',1)
+                    ->groupBy('class')
+                    ->orderBy('class') // 可选：按分类排序
+                    ->pluck('total') // 转换为关联数组
+                    ->toArray();
+        return $this->ok($data);
+    }
+
+    public function getCountByProduct()
+    {
+        $data = AdminMaterial::select( \DB::raw('COUNT(*) as total'), 'product_id')
+                    ->where('status',1)
+                    ->groupBy('product_id')
+                    ->orderBy('product_id') // 可选：按分类排序
+                    ->pluck('total', 'product_id') // 转换为关联数组
+                    ->toArray();
+        $res = [];
+        foreach ($data as $key => $value) {
+            if ($key == 1) {
+                $res[] = [
+                            'value' => $value,
+                            'name'  => '舒筋健腰丸'
+                        ];
+            }
+            if ($key == 2) {
+                $res[] = [
+                            'value' => $value,
+                            'name'  => '清血八味片'
+                        ];
+            }
+            if ($key == 3) {
+                $res[] = [
+                            'value' => $value,
+                            'name'  => '咽康'
+                        ];
+            }
+        }
+        return $this->ok($res);
+    }
+
+    public function getVideoCount()
+    {
+        $data = [];
+        // 1. 定义时间范围（过去6周，包含当前周）
+        $sixWeeksAgo = Carbon::now()->startOfWeek()->subWeeks(5); // 确保包含当前周
+        // 2. 执行聚合查询（按周分组）
+        $results = ComposeVideo::select(
+                DB::raw('DATE_FORMAT(created_at, "%x-%v") as week'), // %x 年份（4位） %v 周数（1-53）
+                DB::raw('SUM(download_count) as total_downloads'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->where('created_at', '>=', $sixWeeksAgo)
+            ->groupBy('week')
+            ->orderBy('week')
+            ->get()
+            ->keyBy('week')
+            ->toArray();
+        $data['weeks'] = array_column($results, 'week');
+        $data['total'] = array_column($results, 'total');
+        $data['total_downloads'] = array_column($results, 'total_downloads');
+
+        return $this->ok($data);
     }
 
 
