@@ -118,6 +118,7 @@ class AdminMaterialController extends Controller
     {
         $data = AdminMaterial::select( \DB::raw('COUNT(*) as total'), 'product_id')
                     ->where('status',1)
+                    ->where('product_id', '!=', 3)
                     ->groupBy('product_id')
                     ->orderBy('product_id') // 可选：按分类排序
                     ->pluck('total', 'product_id') // 转换为关联数组

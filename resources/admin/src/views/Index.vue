@@ -189,7 +189,7 @@ export default {
         legend: {
           orient: 'horizontal',
           bottom: 'bottom',
-          data: ['舒筋健腰丸', '清血八味片', '咽康']
+          data: ['舒筋健腰丸', '清血八味片']
         },
         series: [
           {
