@@ -28,7 +28,6 @@
             {{ getScreenTypeLabel(text) }}
         </template>
       </a-table-column>
-      <a-table-column title="模板规则" data-index="class_rules"/>
       <a-table-column title="添加时间" data-index="created_at" :width="180"/>
       <a-table-column title="操作" :width="120" fixed="right">
         <template #default="record">

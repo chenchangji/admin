@@ -122,5 +122,27 @@ class AliCloudVideoStitcher {
         $response = $client->queryJobList($request);
         return $response;
     }
+
+    // OSS上传方法
+    public function uploadVideo($localConfigPath, $fileName) {
+        $result = '';
+        try {
+            // 创建OSS客户端实例
+            $ossClient = new OssClient(env('OSS_ACCESS_KEY_ID'), env('OSS_ACCESS_KEY_SECRET'), 'oss-cn-shenzhen.aliyuncs.com');
+            $ossConfigPath = 'videos/' . basename($fileName);
+            // 上传文件
+            $result = $ossClient->uploadFile($this->input_bucket, $ossConfigPath, $localConfigPath);
+            logger("上传成功，文件URL: " . $result['info']['url']);
+            
+            
+        } catch (OssException $e) {
+            logger("上传失败: " . $e->getMessage());
+        }
+        
+        // unlink($localConfigPath); // 删除本地临时文件
+        return $result['info']['url'];
+    }
 }
+
+
 ?>

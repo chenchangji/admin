@@ -37,6 +37,7 @@ Route::prefix('admin-api')
             Route::get('admin-materials/getCountByClass', [C\AdminMaterialController::class, 'getCountByClass']);
             Route::get('admin-materials/getCountByProduct', [C\AdminMaterialController::class, 'getCountByProduct']);
             Route::get('admin-materials/getVideoCount', [C\AdminMaterialController::class, 'getVideoCount']);
+            Route::post('admin-materials/updateScore', [C\AdminMaterialController::class, 'updateScore']);
             Route::resource('admin-actors', C\AdminActorController::class)->except(['show']);
             Route::get('admin-actors/list', [C\AdminActorController::class, 'getList'])->name('admin-actors.list');
 

@@ -57,6 +57,16 @@
           {{ getActorName(text) }}
         </template>
       </a-table-column>
+      <a-table-column title="评分" key="score" :width="180">
+        <template #default="record">
+          <a-rate
+            :value="record.score"
+            :count="5"
+            allow-half
+            @change="value => handleRateChange(record.id, value)"
+          />
+        </template>
+      </a-table-column>
       <a-table-column title="创建人" data-index="name" :width="180"/>
       <a-table-column 
         title="更新时间" 
@@ -91,6 +101,7 @@ import {
   destroyAdminMaterial,
   getAdminMaterials,
   exportAdminMaterials,
+  updateVideoScore,
 } from '@/api/admin-materials'
 import {
   getAdminActorList,
@@ -155,16 +166,20 @@ export default {
             { id: 14, name: 'A4-营销内容-合规' },
             { id: 15, name: 'A5-价格营销-合规' },
             { id: 16, name: 'A6-旧素材混剪' },
+            { id: 18, name: 'A8-' },
             { id: 21, name: 'B1-症状代入' },
             { id: 22, name: 'B2-疾病科普' },
             { id: 23, name: 'B3-病理' },
             { id: 26, name: 'B6-旧素材混剪' },
+            { id: 28, name: 'B8-' },
             { id: 31, name: 'C1-产品相关' },
             { id: 36, name: 'C6-旧素材混剪' },
+            { id: 38, name: 'C8-' },
             { id: 41, name: 'D1-价格优惠' },
             { id: 42, name: 'D2-厂家直发' },
             { id: 43, name: 'D3-厂家活动' },
-            { id: 44, name: 'D6-旧素材混剪' }
+            { id: 44, name: 'D6-旧素材混剪' },
+            { id: 48, name: 'D8-' },
           ]
         },
       ],
@@ -239,16 +254,20 @@ export default {
         14: 'A4-营销内容-合规',
         15: 'A5-价格营销-合规',
         16: 'A6-旧素材混剪',
+        18: 'A8-',
         21: 'B1-症状代入',
         22: 'B2-疾病科普',
         23: 'B3-病理',
         26: 'B6-旧素材混剪',
+        28: 'B8-',
         31: 'C1-产品相关',
         36: 'C6-旧素材混剪',
+        38: 'C8-',
         41: 'D1-价格优惠',
         42: 'D2-厂家直发',
         43: 'D3-厂家活动',
-        44: 'D6-旧素材混剪'
+        44: 'D6-旧素材混剪',
+        48: 'D8-'
       };
       return subClassMap[subClassValue] || subClassValue; // 找不到则显示原值
     },
@@ -334,8 +353,28 @@ export default {
       }
     },
 
+    async handleRateChange(videoId, newScore) {
+      try {
+        // 这里调用评分接口（需要根据实际API调整）
+        await updateVideoScore({id: videoId, score: newScore })
+        
+        // 更新本地评分显示
+        const videoIndex = this.adminMaterial.findIndex(v => v.id === videoId)
+        if (videoIndex > -1) {
+          this.$set(this.adminMaterial, videoIndex, {
+            ...this.adminMaterial[videoIndex],
+            score: newScore
+          })
+        }
+        
+        this.$message.success('评分更新成功')
+      } catch (error) {
+        this.$message.error('评分更新失败')
+      }
+    },
+
     // 新增导出方法
-     async handleExport() {
+    async handleExport() {
       this.exportLoading = true;
       try {
         const { path } = this.$route;

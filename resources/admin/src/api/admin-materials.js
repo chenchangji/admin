@@ -39,3 +39,7 @@ export function getCountByProduct() {
 export function getVideoCount() {
   return Request.get('admin-materials/getVideoCount')
 }
+
+export function updateVideoScore(data) {
+  return Request.post(`admin-materials/updateScore`, data)
+}

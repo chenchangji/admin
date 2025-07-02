@@ -103,6 +103,15 @@ class AdminMaterialController extends Controller
         }
     }
 
+    public function updateScore(Request $request)
+    {
+        $post = $request->all();
+        AdminMaterial::query()->where('id', $post['id'])->update([
+             'score' => $post['score']
+         ]);
+        return $this->noContent();
+    }
+
     public function getCountByClass()
     {
         $data = AdminMaterial::select( \DB::raw('COUNT(*) as total'))
