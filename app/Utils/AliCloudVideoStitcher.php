@@ -16,7 +16,7 @@ use Exception;
 
 class AliCloudVideoStitcher {
     private $pipelineId = "5a322426de424047acb5d30352e03ee3";
-    private $templateId = "S00000002-200060"; #转码模板ID，按需配置
+    private $templateId = "S00000002-200050"; #转码模板ID，按需配置
     private $ossLocation = "oss-cn-shenzhen";
     private $input_bucket = 'gzps-video';
     private $output_bucket = 'compose-video';
@@ -81,7 +81,7 @@ class AliCloudVideoStitcher {
             }, $input_video)
         ];
         // 本地保存临时文件
-        $localConfigPath = '../storage/tmp/concat-config-' . time() . '.json';
+        $localConfigPath = '../storage/tmp/concat-config-' . time() . rand(0, 99).  '.json';
         file_put_contents($localConfigPath, json_encode($config, JSON_PRETTY_PRINT));
 
         // 上传到OSS
@@ -129,7 +129,7 @@ class AliCloudVideoStitcher {
         try {
             // 创建OSS客户端实例
             $ossClient = new OssClient(env('OSS_ACCESS_KEY_ID'), env('OSS_ACCESS_KEY_SECRET'), 'oss-cn-shenzhen.aliyuncs.com');
-            $ossConfigPath = 'videos/' . basename($fileName);
+            $ossConfigPath = 'videos/' . $fileName;
             // 上传文件
             $result = $ossClient->uploadFile($this->input_bucket, $ossConfigPath, $localConfigPath);
             logger("上传成功，文件URL: " . $result['info']['url']);
