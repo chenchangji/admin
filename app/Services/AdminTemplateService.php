@@ -149,7 +149,10 @@ class AdminTemplateService
                 }
                 $materials[] = $material;
                 $ids[] = $material['id'];
-                $actor_ids = array_merge($actor_ids, $material['actor_ids']);
+                if (!empty($material['actor_ids'])) {
+                    $actor_ids = array_merge($actor_ids, $material['actor_ids']);
+                }
+                
             }
 
             $actor_ids = array_unique($actor_ids);
