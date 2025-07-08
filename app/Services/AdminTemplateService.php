@@ -187,7 +187,7 @@ class AdminTemplateService
                 $outputObject = 'output/stitched-video.mp4'; // 输出文件路径
 
                 // 5. 提交拼接作业 
-                $response = $videoStitcher->submitStitchingJob($video_urls, $date.'-'.$template['title'].'-'.$i);
+                $response = $videoStitcher->submitStitchingJob($video_urls, $date.'-'.$template['title'].'-'.$i, $template);
                 // 6. 获取作业ID
                 $job_id = data_get($response, 'body.jobResultList.jobResult.0.job.jobId');
                 if (!empty($job_id)) {
@@ -203,10 +203,10 @@ class AdminTemplateService
                     'title'          => $date.'-'.$template['title'].'-'.$i,
                     'template_id'    => $template['id'],
                     'job_id'         => $job_id,
-                    'product_id'     =>$template['product_id'],
-                    'product_format' =>$template['product_format'],
-                    'screen_type'    =>$template['screen_type'],
-                    'actor_ids'      =>json_encode($actor_ids),
+                    'product_id'     => $template['product_id'],
+                    'product_format' => $template['product_format'],
+                    'screen_type'    => $template['screen_type'],
+                    'actor_ids'      => json_encode($actor_ids),
                     'material_ids'   => json_encode(explode('-', $key)),
                     'material_titles'   => implode('+',$material_titles),
                     'status'         => 0,

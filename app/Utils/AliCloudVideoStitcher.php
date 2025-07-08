@@ -21,6 +21,12 @@ class AliCloudVideoStitcher {
     private $input_bucket = 'gzps-video';
     private $output_bucket = 'compose-video';
     private $oss_output_object  = "video/stitched-video.mp4";
+    private $shu_template_id = '2bf7e6ffde834ca7b5bbffdb22ab2659';
+    private $heng_template_id = '30fee777ca744409b692bc1eb2d87588';
+    private $shu_water_mark_image = 'image/竖屏水印.png';
+    private $heng_water_mark_image = 'image/横屏水印.png';
+    private $shu_water_mark_image_shujin = 'image/舒筋竖屏水印.png';
+    private $heng_water_mark_image_shujin = 'image/舒筋横屏水印.png';
     
      /**
      * @param string $accessKeyId
@@ -41,7 +47,7 @@ class AliCloudVideoStitcher {
     /**
      * @return void
      */
-    public  function submitStitchingJob($video_urls , $key){
+    public  function submitStitchingJob($video_urls , $key, $template){
         $client = self::createClient(env('OSS_ACCESS_KEY_ID'), env('OSS_ACCESS_KEY_SECRET'), 'cn-shenzhen');
         $input_object = ltrim($video_urls[0], '/'); 
         $request = new SubmitJobsRequest([
@@ -54,19 +60,57 @@ class AliCloudVideoStitcher {
             "outputBucket" => $this->output_bucket,
             "outputLocation" => $this->ossLocation,
             "pipelineId" => $this->pipelineId,
-            "outputs" => $this->outputs($video_urls, $key),
+            "outputs" => $this->outputs($video_urls, $key, $template),
         ]);
         $response = $client->submitJobs($request);
         return $response;
     }
 
-    public function outputs($video_urls, $key) {
+    public function outputs($video_urls, $key, $template) {
         $merge_config_url = $this->generateMergeConfig($video_urls);
         $output = [
             'OutputObject' => urlencode("video/".$key.".mp4"),
             'TemplateId' => $this->templateId,
             'MergeConfigUrl' => $merge_config_url
         ];
+        //添加水印
+        if ($template['is_water_mark'] == 1) {
+            $image_watermark_input = array(
+                            'Location' => $this->ossLocation,
+                            'Bucket' => $this->input_bucket
+                            );
+            if ($template['product_id'] == 2) {
+                if ($template['screen_type'] == 1) {
+                    $image_watermark_input['Object'] =  urlencode($this->heng_water_mark_image);
+                    $template_id = $this->heng_template_id;
+                }else{
+                    $image_watermark_input['Object'] =  urlencode($this->shu_water_mark_image);
+                    $template_id = $this->shu_template_id;
+                }
+            }
+            if ($template['product_id'] == 1) {
+                if ($template['screen_type'] == 1) {
+                    $image_watermark_input['Object'] =  urlencode($this->heng_water_mark_image_shujin);
+                    $template_id = $this->heng_template_id;
+                }else{
+                    $image_watermark_input['Object'] =  urlencode($this->shu_water_mark_image_shujin);
+                    $template_id = $this->shu_template_id;
+                }
+            }
+           
+            $output['WaterMarks'] = array(
+                                        array(
+                                                'WaterMarkTemplateId' => $template_id,
+                                                'Type' => 'Image',
+                                                'InputFile' => $image_watermark_input,
+                                                'ReferPos' => 'TopRight',
+                                                'Width' => 0.99,
+                                                'Dx' => 0,
+                                                'Dy'=> 0
+                                            )
+                                        );
+                
+        }
         return json_encode([$output]);
     }
 

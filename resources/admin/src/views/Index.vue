@@ -19,6 +19,13 @@
       <!-- 双轴图 -->
       <a-col :span="24">
         <a-card title="合成视频和下载量增长趋势" class="chart-card">
+          <div class="filter-container">
+                <a-select v-model="timeDimension" style="width: 200px" @change="handleTimeDimensionChange">
+                  <a-select-option value="day">按日</a-select-option>
+                  <a-select-option value="week">按周</a-select-option>
+                  <a-select-option value="month">按月</a-select-option>
+                </a-select>
+              </div>
           <div ref="dualChart" class="chart"></div>
         </a-card>
       </a-col>
@@ -40,6 +47,12 @@ export default {
   components: {
     PageContent
   },
+  data() {
+    return {
+      timeDimension: 'day', // 默认按周显示
+      // ...其他数据
+    }
+  },
   mounted() {
     this.initCharts();
     window.addEventListener('resize', this.handleResize);
@@ -51,7 +64,12 @@ export default {
     if (this.dualChart) this.dualChart.dispose();
   },
   methods: {
-     async initCharts() {
+    async handleTimeDimensionChange() {
+      await this.loadDualData();
+      this.dualChart.setOption(this.getDualOption());
+    },
+
+    async initCharts() {
       // 初始化柱状图
       this.barChart = echarts.init(this.$refs.barChart);
       
@@ -112,7 +130,8 @@ export default {
     async loadDualData() {
       this.loading = true;
       try {
-        const res = await getVideoCount();
+        const params = {timeDimension: this.timeDimension};
+        const res = await getVideoCount(params);
         this.dualData = res.data; 
         this.dualChart.setOption(this.getDualOption());
       } catch (error) {
@@ -248,7 +267,7 @@ export default {
         xAxis: [
           {
             type: 'category',
-            data: data.weeks,
+            data: data.timeLabels,
             axisPointer: {
               type: 'shadow'
             }
@@ -336,5 +355,10 @@ export default {
 /* 双轴图高度稍大 */
 .chart-card:nth-child(3) .chart {
   height: 350px;
+}
+
+.filter-container {
+  margin-bottom: 16px;
+  padding: 0 16px;
 }
 </style>

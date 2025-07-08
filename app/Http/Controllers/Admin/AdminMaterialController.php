@@ -156,24 +156,60 @@ class AdminMaterialController extends Controller
         return $this->ok($res);
     }
 
-    public function getVideoCount()
+    public function getVideoCount(Request $request)
     {
+        $params = $request->all();
+        $time_dimension = data_get($params, 'timeDimension', 'week');
         $data = [];
-        // 1. 定义时间范围（过去6周，包含当前周）
-        $sixWeeksAgo = Carbon::now()->startOfWeek()->subWeeks(5); // 确保包含当前周
-        // 2. 执行聚合查询（按周分组）
-        $results = ComposeVideo::select(
-                DB::raw('DATE_FORMAT(created_at, "%x-%v") as week'), // %x 年份（4位） %v 周数（1-53）
-                DB::raw('SUM(download_count) as total_downloads'),
-                DB::raw('COUNT(*) as total')
-            )
-            ->where('created_at', '>=', $sixWeeksAgo)
-            ->groupBy('week')
-            ->orderBy('week')
-            ->get()
-            ->keyBy('week')
-            ->toArray();
-        $data['weeks'] = array_column($results, 'week');
+        //统计前6周，或前15天， 或者 前6个月的数据
+        if ($time_dimension == 'week') {
+            // 1. 定义时间范围（过去6周，包含当前周）
+            $start_time = Carbon::now()->startOfWeek()->subWeeks(5); // 确保包含当前周
+            // 2. 执行聚合查询（按周分组）
+            $results = ComposeVideo::select(
+                    DB::raw('DATE_FORMAT(created_at, "%x-%v") as dimension'), // %x 年份（4位） %v 周数（1-53）
+                    DB::raw('SUM(download_count) as total_downloads'),
+                    DB::raw('COUNT(*) as total')
+                )
+                ->where('created_at', '>=', $start_time)
+                ->groupBy('dimension')
+                ->orderBy('dimension')
+                ->get()
+                ->keyBy('dimension')
+                ->toArray();
+        }elseif($time_dimension == 'month') {
+            // 1. 定义时间范围（过去6月，包含当前月）
+            $start_time = Carbon::now()->startOfMonth()->subMonths(5); 
+            // 2. 执行聚合查询（按周分组）
+            $results = ComposeVideo::select(
+                    DB::raw('DATE_FORMAT(created_at, "%Y-%m") as dimension'), 
+                    DB::raw('SUM(download_count) as total_downloads'),
+                    DB::raw('COUNT(*) as total')
+                )
+                ->where('created_at', '>=', $start_time)
+                ->groupBy('dimension')
+                ->orderBy('dimension')
+                ->get()
+                ->keyBy('dimension')
+                ->toArray();
+        }else{
+            // 1. 定义时间范围（过去15天，包含当前周）
+            $start_time = Carbon::now()->startOfDay()->subDays(14); 
+            // 2. 执行聚合查询（按周分组）
+            $results = ComposeVideo::select(
+                    DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d") as dimension'), 
+                    DB::raw('SUM(download_count) as total_downloads'),
+                    DB::raw('COUNT(*) as total')
+                )
+                ->where('created_at', '>=', $start_time)
+                ->groupBy('dimension')
+                ->orderBy('dimension')
+                ->get()
+                ->keyBy('dimension')
+                ->toArray();
+        }
+        
+        $data['timeLabels'] = array_column($results, 'dimension');
         $data['total'] = array_column($results, 'total');
         $data['total_downloads'] = array_column($results, 'total_downloads');
 

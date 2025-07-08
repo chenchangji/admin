@@ -46,6 +46,12 @@
           <a-select-option :value="2">竖屏</a-select-option>
         </a-select>
       </lz-form-item>
+      <lz-form-item label="是否添加水印" required prop="is_water_mark">
+        <a-select v-model="form.is_water_mark" placeholder="是否添加水印">
+          <a-select-option :value="1">添加</a-select-option>
+          <a-select-option :value="0">不添加</a-select-option>
+        </a-select>
+      </lz-form-item>
       <lz-form-item label="投放类型"  prop="product_tag">
         <a-select v-model="form.product_tag" placeholder="请选择投放类型">
           <a-select-option :value="1">直购</a-select-option>
@@ -182,6 +188,7 @@ export default {
         product_format: '',
         product_tag: '',
         screen_type: '',
+        is_water_mark: '',
         class_rules: '',
         range: '',
         exclude_actor_ids: [],
