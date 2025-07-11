@@ -40,7 +40,7 @@ class SyncVideoCommand extends Command
      */
     public function handle()
     {
-        $directoryPath = '\\Hr-20211231kwlj\共享文件夹\营销部\新媒体-电商视频\信息流视频使用\120片清血素材分类管理';                  
+        $directoryPath = 'D:\120片清血素材分类管理';                  
         // 检查目录是否存在
         if (!File::isDirectory($directoryPath)) {
             throw new \InvalidArgumentException("目录不存在: {$directoryPath}");

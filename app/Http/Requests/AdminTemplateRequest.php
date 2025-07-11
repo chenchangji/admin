@@ -11,7 +11,8 @@ class AdminTemplateRequest extends FormRequest
         $rules = [
             'title' => 'required',
             'product_id' => 'required',
-            'product_format' => 'required',
+            'product_format' => 'nullable',
+            'product_type' => 'nullable',
             'product_tag' => 'int|nullable',
             'screen_type' => 'required',
             'class_rules' => 'required',

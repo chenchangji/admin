@@ -277,15 +277,11 @@ export default {
           {
             type: 'value',
             name: '下载次数',
-            min: 0,
-            max: 100,
             interval: 50
           },
           {
             type: 'value',
             name: '合成视频数',
-            min: 0,
-            max: 100,
             interval: 200
           }
         ],

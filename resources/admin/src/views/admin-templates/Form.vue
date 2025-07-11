@@ -40,6 +40,12 @@
           </a-select-option>
         </a-select>
       </lz-form-item>
+      <lz-form-item label="产品来源"  prop="product_type">
+        <a-select v-model="form.product_type" placeholder="请选择产品来源">
+          <a-select-option :value="1">信息流视频</a-select-option>
+          <a-select-option :value="2">种草视频</a-select-option>
+        </a-select>
+      </lz-form-item>
       <lz-form-item label="横竖屏" required prop="screen_type">
         <a-select v-model="form.screen_type" placeholder="请选择横竖屏">
           <a-select-option :value="1">横屏</a-select-option>
@@ -186,6 +192,7 @@ export default {
         title: '',
         product_id: '',
         product_format: '',
+        product_type: '',
         product_tag: '',
         screen_type: '',
         is_water_mark: '',

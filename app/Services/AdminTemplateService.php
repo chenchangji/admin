@@ -50,6 +50,7 @@ class AdminTemplateService
         $actor_ids            = data_get($rule, 'actor_ids');
         $product_id           = data_get($template, 'product_id');
         $product_format       = data_get($template, 'product_format');
+        $product_type         = data_get($template, 'product_type');
         $product_tag          = data_get($template, 'product_tag');
         $screen_type          = data_get($template, 'screen_type');
         $range                = data_get($template, 'range');
@@ -57,7 +58,6 @@ class AdminTemplateService
         $exclude_actor_ids    = data_get($template, 'exclude_actor_ids');
         //找到符合规则的视频
         $query = AdminMaterial::query()->where('product_id', $product_id)
-                                       ->where('product_format', $product_format)
                                        ->where('status', 1)
                                        ->where('screen_type', $screen_type);
         if (!empty($class)) {
@@ -65,6 +65,12 @@ class AdminTemplateService
         }
         if (!empty($sub_class)) {
             $query->where('sub_class', $sub_class);
+        }
+        if (!empty($product_format)) {
+            $query->where('product_format', $product_format);
+        }
+        if (!empty($product_type)) {
+            $query->where('type', $product_type);
         }
         //指定演员
         if (!empty($actor_ids)) {
@@ -93,7 +99,7 @@ class AdminTemplateService
         if ($query->count() == 0) {
             return [];
         }
-        $range_query = $query;
+        $range_query = clone $query;
         if (!empty($range)) {
             switch ($range) {
                 case '1':

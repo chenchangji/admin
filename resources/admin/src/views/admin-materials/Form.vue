@@ -9,6 +9,13 @@
       <lz-form-item label="标题" required prop="title">
         <a-input v-model="form.title"/>
       </lz-form-item>
+
+      <lz-form-item label="视频来源"  prop="type">
+        <a-select v-model="form.type" placeholder="请选择视频来源">
+          <a-select-option :value="1">信息流视频</a-select-option>
+          <a-select-option :value="2">种草视频</a-select-option>
+        </a-select>
+      </lz-form-item>
      
       <lz-form-item label="视频分类" required prop="class">
         <a-select
@@ -162,6 +169,7 @@ export default {
         screen_type: '',
         desc: '',
         url: '',
+        type: '',
         product_id: '',
         product_format: '',
         tag: '',

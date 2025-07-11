@@ -131,6 +131,15 @@ export default {
           label: '标题',
         },
         {
+          field: 'type',
+          label: '视频来源',
+          type: 'select',  
+          options: [      // 定义下拉选项
+            { id: 1, name: '信息流视频' },
+            { id: 2, name: '种草视频' }
+          ]
+        },
+        {
           field: 'actor',
           label: '演员',
           type: 'select',

@@ -9,6 +9,7 @@ class AdminTemplate extends Model
         'product_id',
         'product_format',
         'product_tag',
+        'product_type',
         'screen_type',
         'class_rules',
         'range',
