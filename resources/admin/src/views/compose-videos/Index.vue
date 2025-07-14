@@ -318,45 +318,92 @@ export default {
     },
 
     async handleDownload() {
-      if (this.selectedVideos.length > 20){
-          this.$message.warning('请选择最多20个视频进行下载');
-          return;
+      // 1. 数量校验
+      if (this.selectedVideos.length > 20) {
+        this.$message.warning('请选择最多20个视频进行下载');
+        return;
       }
 
       try {
-
-        const downloadVideos = this.selectedVideos
-          .map(videoId => {
-            const video = this.composeVideo.find(v => v.id === videoId);
-            if (!video) return null;     
-            if (!video.url) {
-              console.warn(`视频 ${videoId}(${video.title}) 缺少下载地址`);
-              return null;
+        // 2. 预处理有效视频
+        const validVideos = this.selectedVideos
+          .map(videoId => this.composeVideo.find(v => v.id === videoId))
+          .filter(video => {
+            if (!video) {
+              console.warn(`视频${videoId}不存在`);
+              return false;
             }
-     
-            return video;
-          })
-          .filter(Boolean);
-        // 批量下载处理
-        this.downloadVideos = downloadVideos; 
+            if (!video.url) {
+              console.warn(`视频 ${video.id} (${video.title}) 缺少下载地址`);
+              return false;
+            }
+            return true;
+          });
 
-        for (let i = 0; i < this.downloadVideos.length; i++) {
-          const video = this.downloadVideos[i];
+        // 3. 初始化统计
+        const results = {
+          success: 0,
+          fail: 0,
+          errors: []
+        };
+
+        // 4. 动态延迟下载（初始300ms，每5个请求增加延迟）
+        const BASE_DELAY = 300;
+        const CONCURRENCY_BATCH = 5;
+        
+        for (let i = 0; i < validVideos.length; i++) {
+          const video = validVideos[i];
           
-          // 获取下载链接
-          const downloadUrl = video.url;
+          try {
+            // 5. 执行下载
+            this.createDownloadLink(video.url, video.title);
+            results.success++;
+            
+            // 6. 成功后才记录日志
+            await downloadLog([video.id]);
+          } catch (error) {
+            // 7. 单任务错误捕获
+            results.fail++;
+            results.errors.push({
+              id: video.id,
+              title: video.title,
+              reason: error.message || '未知错误'
+            });
+            console.error(`视频下载失败: ${video.title}`, error);
+          }
           
-          // 创建隐藏链接触发下载
-          this.createDownloadLink(downloadUrl, video.title);
-          
-          // 添加延迟避免浏览器并发限制
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // 8. 动态延迟（每5个请求后增加延迟）
+          const delay = BASE_DELAY + (Math.floor(i / CONCURRENCY_BATCH) * 100);
+          if (i < validVideos.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
         }
-        await downloadLog(this.selectedVideos);
-        this.$message.success(`已添加 ${this.selectedVideos.length} 个下载任务`);
-      } catch (error) {
-        this.$message.error(`下载失败: ${error.message}`);
-      } 
+
+        // 9. 生成结果消息
+        let resultMessage = `下载完成: ${results.success}个成功`;
+        if (results.fail > 0) {
+          resultMessage += `, ${results.fail}个失败`;
+          // 附加失败详情（限制最多显示3条）
+          const errorDetails = results.errors.slice(0, 3)
+            .map(e => `${e.title}(${e.reason})`)
+            .join('; ');
+          resultMessage += `。失败视频: ${errorDetails}${results.errors.length > 3 ? '...' : ''}`;
+        }
+        
+        // 10. 结果通知
+        if (results.fail === validVideos.length) {
+          this.$message.error('所有下载任务均失败');
+        } else {
+          results.fail > 0 
+            ? this.$message.warning(resultMessage) 
+            : this.$message.success(resultMessage);
+        }
+
+      } catch (globalError) {
+        // 11. 全局错误捕获
+        this.$message.error(`下载流程异常: ${globalError.message}`);
+        console.error('全局下载异常:', globalError);
+      }
     },
 
     // 创建下载链接并触发点击
