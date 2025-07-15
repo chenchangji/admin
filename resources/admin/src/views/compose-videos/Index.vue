@@ -348,7 +348,7 @@ export default {
         };
 
         // 4. 动态延迟下载（初始300ms，每5个请求增加延迟）
-        const BASE_DELAY = 300;
+        const BASE_DELAY = 1000;
         const CONCURRENCY_BATCH = 5;
         
         for (let i = 0; i < validVideos.length; i++) {
