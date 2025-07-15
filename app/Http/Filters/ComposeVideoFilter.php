@@ -15,7 +15,7 @@ class ComposeVideoFilter extends Filter
 
     protected function title($val)
     {
-        $this->builder->where('title', 'like', '%'.$val.'%');
+        $this->builder->where('compose_videos.title', 'like', '%'.$val.'%');
     }
 
     protected function actor($val)
