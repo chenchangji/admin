@@ -48,6 +48,7 @@ Route::prefix('admin-api')
 
             Route::resource('compose-videos', C\ComposeVideoController::class)->except(['show']);
             Route::post('compose-videos/download/log', [C\ComposeVideoController::class, 'downloadLog']);
+            Route::post('compose-videos/batch-download', [C\ComposeVideoController::class, 'batchDownload']);
             Route::post('compose-videos/updateScore', [C\ComposeVideoController::class, 'updateScore']);
             // 清除并缓存配置
             Route::post('configs/cache', [C\ConfigController::class, 'cache'])->name('configs.cache');

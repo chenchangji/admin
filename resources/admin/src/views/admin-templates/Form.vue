@@ -209,19 +209,23 @@ export default {
           { value: 14, label: 'A4-营销内容-合规' },
           { value: 15, label: 'A5-价格营销-合规' },
           { value: 16, label: 'A6-旧素材混剪' },
+          { value: 17, label: 'A7-' },
           { value: 18, label: 'A8-' },
           { value: 21, label: 'B1-症状代入' },
           { value: 22, label: 'B2-疾病科普' },
           { value: 23, label: 'B3-病理' },
           { value: 26, label: 'B6-旧素材混剪' },
+          { value: 27, label: 'B7-' },
           { value: 28, label: 'B8-' },
           { value: 31, label: 'C1-产品相关' },
           { value: 36, label: 'C6-旧素材混剪' },
+          { value: 37, label: 'C7-' },
           { value: 38, label: 'C8-' },
           { value: 41, label: 'D1-价格优惠' },
           { value: 42, label: 'D2-厂家直发' },
           { value: 43, label: 'D3-厂家活动' },
           { value: 44, label: 'D6-旧素材混剪' },
+          { value: 47, label: 'D7-' },
           { value: 48, label: 'D8-' }
         ],
       // 产品选项
@@ -261,6 +265,7 @@ export default {
           { value: 14, label: 'A4-营销内容-合规' },
           { value: 15, label: 'A5-价格营销-合规' },
           { value: 16, label: 'A6-旧素材混剪' },
+          { value: 17, label: 'A7-' },
           { value: 18, label: 'A8-' }
         ],
         2: [ // 痛点/症状的子分类
@@ -268,11 +273,13 @@ export default {
           { value: 22, label: 'B2-疾病科普' },
           { value: 23, label: 'B3-病理' },
           { value: 26, label: 'B6-旧素材混剪' },
+          { value: 27, label: 'A8-' },
           { value: 28, label: 'B8-' }
         ],
         3: [ // 产品背书的子分类
           { value: 31, label: 'C1-产品相关' },
           { value: 36, label: 'C6-旧素材混剪' },
+          { value: 37, label: 'C7-' },
           { value: 38, label: 'C8-' }
         ],
         4: [ // 引导购买的子分类
@@ -280,6 +287,7 @@ export default {
           { value: 42, label: 'D2-厂家直发' },
           { value: 43, label: 'D3-厂家活动' },
           { value: 44, label: 'D6-旧素材混剪' },
+          { value: 47, label: 'D7-' },
           { value: 48, label: 'D8-' }
         ]
       },

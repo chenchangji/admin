@@ -121,10 +121,12 @@ import {
   downloadLog,
   updateVideoScore,
 } from '@/api/compose-videos'
+import axios from 'axios' // Add axios import
 import {
   getAdminActorList,
 } from '@/api/admin-actors'
 import { removeWhile } from '@/libs/utils'
+import { message } from 'ant-design-vue';
 
 export default {
   name: 'Index',
@@ -308,101 +310,116 @@ export default {
       }
     },
 
-    // 新增复选框处理方法
-    handleCheckboxChange(id, checked) {
-      if (checked) {
-        this.selectedVideos.push(id)
-      } else {
-        this.selectedVideos = this.selectedVideos.filter(item => item !== id)
-      }
-    },
-
     async handleDownload() {
-      // 1. 数量校验
+      // 1. 数量校验（提前返回）
       if (this.selectedVideos.length > 20) {
         this.$message.warning('请选择最多20个视频进行下载');
         return;
       }
 
+      // 2. 数据准备优化
+      const validVideos = this.selectedVideos.map(videoId => 
+        this.composeVideo.find(v => v.id === videoId)
+      ).filter(Boolean);
+
+      // 3. 有效性检查
+      const invalidVideos = [];
+      const validUrls = [];
+
+      validVideos.forEach(video => {
+        if (!video.url) {
+          invalidVideos.push(video);
+          console.warn(`视频 ${video.id} (${video.title}) 缺少下载地址`);
+          return;
+        }
+        validUrls.push(video.url);
+      });
+
+      // 4. 无效视频提示
+      if (invalidVideos.length > 0) {
+        this.$message.warning({
+          message: `${invalidVideos.length}个视频缺少下载地址，已跳过`,
+          duration: 5000
+        });
+      }
+
+      // 5. 无有效地址处理
+      if (validUrls.length === 0) {
+        this.$message.warning('没有有效的视频下载地址');
+        return;
+      }
+
+      // 6. 创建加载提示
+      const hide = message.loading('下载中...', 0); 
+
       try {
-        // 2. 预处理有效视频
-        const validVideos = this.selectedVideos
-          .map(videoId => this.composeVideo.find(v => v.id === videoId))
-          .filter(video => {
-            if (!video) {
-              console.warn(`视频${videoId}不存在`);
-              return false;
-            }
-            if (!video.url) {
-              console.warn(`视频 ${video.id} (${video.title}) 缺少下载地址`);
-              return false;
-            }
-            return true;
-          });
+        // 7. 请求优化
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-        // 3. 初始化统计
-        const results = {
-          success: 0,
-          fail: 0,
-          errors: []
-        };
+        const response = await fetch('/admin-api/compose-videos/batch-download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls: validUrls }),
+          signal: controller.signal
+        });
 
-        // 4. 动态延迟下载（初始300ms，每5个请求增加延迟）
-        const BASE_DELAY = 1000;
-        const CONCURRENCY_BATCH = 5;
-        
-        for (let i = 0; i < validVideos.length; i++) {
-          const video = validVideos[i];
-          
-          try {
-            // 5. 执行下载
-            this.createDownloadLink(video.url, video.title);
-            results.success++;
-            
-            // 6. 成功后才记录日志
-            await downloadLog([video.id]);
-          } catch (error) {
-            // 7. 单任务错误捕获
-            results.fail++;
-            results.errors.push({
-              id: video.id,
-              title: video.title,
-              reason: error.message || '未知错误'
-            });
-            console.error(`视频下载失败: ${video.title}`, error);
-          }
-          
-          // 8. 动态延迟（每5个请求后增加延迟）
-          const delay = BASE_DELAY + (Math.floor(i / CONCURRENCY_BATCH) * 100);
-          if (i < validVideos.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
+        clearTimeout(timeoutId);
+
+        // 8. 响应状态处理
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `下载失败: ${response.status}`);
         }
 
-        // 9. 生成结果消息
-        let resultMessage = `下载完成: ${results.success}个成功`;
-        if (results.fail > 0) {
-          resultMessage += `, ${results.fail}个失败`;
-          // 附加失败详情（限制最多显示3条）
-          const errorDetails = results.errors.slice(0, 3)
-            .map(e => `${e.title}(${e.reason})`)
-            .join('; ');
-          resultMessage += `。失败视频: ${errorDetails}${results.errors.length > 3 ? '...' : ''}`;
+        // 9. 文件名解析优化
+        const contentDisposition = response.headers.get('content-disposition');
+        const filename = contentDisposition
+          ? decodeURIComponent(contentDisposition.split("filename*=utf-8''")[1] || 
+            contentDisposition.split('filename=')[1].replace(/["']/g, ''))
+          : 'videos.zip';
+
+        // 10. 流处理（移除进度更新）
+        const reader = response.body.getReader();
+        const chunks = [];
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
         }
+
+        // 11. 文件创建优化
+        const blob = new Blob(chunks, { type: 'application/zip' });
+        const url = URL.createObjectURL(blob);
         
-        // 10. 结果通知
-        if (results.fail === validVideos.length) {
-          this.$message.error('所有下载任务均失败');
+        // 12. 安全下载
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+
+        // 13. 资源清理
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
+
+        this.$message.success('下载完成');
+
+      } catch (error) {
+        console.error('下载失败:', error);
+        // 14. 错误分类处理
+        if (error.name === 'AbortError') {
+          this.$message.error('下载超时，请重试');
         } else {
-          results.fail > 0 
-            ? this.$message.warning(resultMessage) 
-            : this.$message.success(resultMessage);
+          this.$message.error(`下载失败: ${error.message}`);
         }
-
-      } catch (globalError) {
-        // 11. 全局错误捕获
-        this.$message.error(`下载流程异常: ${globalError.message}`);
-        console.error('全局下载异常:', globalError);
+      } finally {
+        // 15. 关闭加载提示
+        hide();
       }
     },
 
