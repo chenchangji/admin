@@ -2,7 +2,13 @@
   <page-content>
     <space class="my-1">
       <search-form :fields="search"/>
-
+      <a-button 
+        type="primary"
+        @click="handleSelectAll"
+        style="margin-left: 12px"     
+      >
+          {{ isAllSelected ? '取消全选' : '全选' }}
+      </a-button>
       <!-- 下载按钮 -->
       <a-button 
         type="primary" 
@@ -22,18 +28,12 @@
       :pagination="false"
     >
      <!-- 新增选择列 -->
-      <a-table-column title="选择" :width="60">
-        <template #header>
-          <a-checkbox
-            :checked="isAllSelected"
-            @change="e => handleSelectAll(e)"
-          />
-        </template>
+      <a-table-column title="选择" :width="80">
         <template #default="record">
-          <a-checkbox
-            :checked="selectedVideos.includes(record.id)"
-            @change="checked => handleCheckboxChange(record.id, checked.target.checked)"
-          />
+            <a-checkbox
+              :checked="selectedVideos.includes(record.id)"
+              @change="checked => handleCheckboxChange(record.id, checked.target.checked)"
+            />
         </template>
       </a-table-column>
       <a-table-column title="ID" data-index="id" :width="60"/>
@@ -114,7 +114,7 @@ import LzPopconfirm from '@c/LzPopconfirm'
 import PageContent from '@c/PageContent'
 import SearchForm from '@c/SearchForm'
 import Space from '@c/Space'
-import { Rate } from 'ant-design-vue'
+import { Rate, Checkbox } from 'ant-design-vue'
 import {
   destroyComposeVideo,
   getComposeVideos,
@@ -138,6 +138,7 @@ export default {
     Space,
     SearchForm,
     ARate: Rate,
+    ACheckbox: Checkbox,
   },
   data() {
     return {
@@ -188,16 +189,16 @@ export default {
   },
   methods: {
     // 新增全选处理方法
-    handleSelectAll(e) {
+    handleSelectAll() {
       const currentPageIds = this.composeVideo.map(item => item.id);
-      if (e.target.checked) {
-        // 全选：添加当前页所有未选中的ID
-        const newIds = currentPageIds.filter(
-          id => !this.selectedVideos.includes(id)
-        );
-        this.selectedVideos = [...new Set([...this.selectedVideos, ...newIds])];
+      
+      if (this.selectedVideos == 0) {
+        // 添加当前页所有ID（去重）
+        this.selectedVideos = [
+          ...new Set([...this.selectedVideos, ...currentPageIds])
+        ];
       } else {
-        // 取消全选：移除当前页所有ID
+        // 仅移除当前页ID
         this.selectedVideos = this.selectedVideos.filter(
           id => !currentPageIds.includes(id)
         );
@@ -468,4 +469,7 @@ export default {
     },
   },
 }
+
+
 </script>
+
