@@ -462,7 +462,7 @@ export default {
         const { data: { data, meta } } = await getComposeVideos(newVal.query)
         this.composeVideo = data
         this.page = meta
-
+        this.selectedVideos = []
         this.$scrollResolve()
       },
       immediate: true,
