@@ -202,7 +202,7 @@ export default {
           { value: 22, label: 'B2-疾病科普' },
           { value: 23, label: 'B3-病理' },
           { value: 26, label: 'B6-旧素材混剪' },
-          { value: 27, label: 'A8-' },
+          { value: 27, label: 'B7-' },
           { value: 28, label: 'B8-' }
         ],
         3: [ // 产品背书的子分类
