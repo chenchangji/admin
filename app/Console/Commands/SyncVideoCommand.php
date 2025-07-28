@@ -40,7 +40,7 @@ class SyncVideoCommand extends Command
      */
     public function handle()
     {
-        $directoryPath = 'D:\120片清血素材分类管理';                  
+        $directoryPath = 'D:\拆解\A6\横屏';                  
         // 检查目录是否存在
         if (!File::isDirectory($directoryPath)) {
             throw new \InvalidArgumentException("目录不存在: {$directoryPath}");
@@ -72,8 +72,8 @@ class SyncVideoCommand extends Command
                 $data['video_cover_url'] = $data['url'].'?x-oss-process=video/snapshot,t_10000,m_fast';
                 $data['title'] = $name;
                 $data['type'] = 1;
-                $data['product_id'] = 2;
-                $data['product_format'] = 4;
+                $data['product_id'] = 1;
+                $data['product_format'] = 2;
                 $data['user_id'] = 1;
                 //根据路径获取相关产品分类信息
                 if (strpos($path, "竖屏") !== false) {
@@ -148,6 +148,8 @@ class SyncVideoCommand extends Command
                     $data['actor_ids'] = [10];
                 }elseif(strpos($path, "杨淑秋") !== false){
                     $data['actor_ids'] = [16];
+                }else{
+                    $data['actor_ids'] = [];
                 }
                 AdminMaterial::create($data);
                 echo "同步".$name.'成功！'. "\n";

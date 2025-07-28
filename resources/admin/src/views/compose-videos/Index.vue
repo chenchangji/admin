@@ -407,7 +407,7 @@ export default {
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
         }, 100);
-
+        await downloadLog(this.selectedVideos);
         this.$message.success('下载完成');
 
       } catch (error) {

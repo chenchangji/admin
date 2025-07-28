@@ -23,6 +23,7 @@ class AdminTemplateController extends Controller
         $adminTemplates = AdminTemplate::query()
             ->where('status', 1)
             ->filter($filter)
+            ->orderBy('id', 'desc')
             ->paginate();
 
         return $this->ok(AdminTemplateResource::collection($adminTemplates));
