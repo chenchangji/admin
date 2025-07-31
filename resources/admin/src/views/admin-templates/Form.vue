@@ -52,10 +52,15 @@
           <a-select-option :value="2">竖屏</a-select-option>
         </a-select>
       </lz-form-item>
-      <lz-form-item label="是否添加水印" required prop="is_water_mark">
-        <a-select v-model="form.is_water_mark" placeholder="是否添加水印">
-          <a-select-option :value="1">添加</a-select-option>
-          <a-select-option :value="0">不添加</a-select-option>
+      <lz-form-item label="水印图"  prop="water_image_id">
+        <a-select v-model="form.water_image_id"    placeholder="请选择水印图">
+          <a-select-option 
+            v-for="item in waterImageOptions" 
+            :key="item.value" 
+            :value="item.value"
+          >
+            {{ item.label }}
+          </a-select-option>
         </a-select>
       </lz-form-item>
       <lz-form-item label="投放类型"  prop="product_tag">
@@ -179,6 +184,10 @@ import {
   getAdminActorList,
 } from '@/api/admin-actors'
 
+import {
+  getAdminWaterImageList,
+} from '@/api/admin-water-images'
+
 export default {
   name: 'Form',
   components: {
@@ -191,6 +200,7 @@ export default {
       form: {
         title: '',
         product_id: '',
+        water_image_id: '',
         product_format: '',
         product_type: '',
         product_tag: '',
@@ -203,6 +213,7 @@ export default {
       },
       errors: {},
       actorOptions: [], // 演员下拉选项
+      waterImageOptions: [], // 演员下拉选项
       subClassOptions: [ // 营销内容的子分类
           { value: 11, label: 'A1-营销内容' },
           { value: 12, label: 'A2-价格营销' },
@@ -300,6 +311,7 @@ export default {
 
   created() {
     this.fetchActorOptions(); // 组件创建时获取数据
+    this.fetchWaterImageOptions();
   },
 
   methods: {
@@ -351,6 +363,21 @@ export default {
       } catch (error) {
         console.error('获取演员列表失败:', error);
         this.$message.error('获取演员列表失败');
+      }
+    },
+
+    async fetchWaterImageOptions() {
+      try {
+        const response = await getAdminWaterImageList(); // 调用API获取数据
+        // 假设接口返回的数据格式为 [{id: 1, name: '营销内容'}, ...]
+        this.waterImageOptions = response.data.map(item => ({
+          value: item.id,
+          label: item.title,
+        }));
+        
+      } catch (error) {
+        console.error('获取水印图列表失败:', error);
+        this.$message.error('获取水印图列表失败');
       }
     },
     handleProductChange(value) {

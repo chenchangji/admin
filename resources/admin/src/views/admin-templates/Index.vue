@@ -78,7 +78,7 @@
         <a-input-number 
           v-model:value="generateCount" 
           :min="1"
-          :max="30" 
+          :max="50" 
            style="width: 100%"
         />
       </a-form-item>

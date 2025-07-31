@@ -17,6 +17,7 @@ class AdminTemplate extends Model
         'exclude_actor_ids',
         'user_id',
         'is_water_mark',
+        'water_image_id',
         'status',
     ];
     protected $casts = [

@@ -17,6 +17,7 @@ class AdminTemplateRequest extends FormRequest
             'screen_type' => 'required',
             'class_rules' => 'required',
             'range' => 'int',
+            'water_image_id' => 'int',
             'is_water_mark'=> 'required',
             'exclude_actor_ids' => 'array',
             'exclude_sub_class' => 'array',

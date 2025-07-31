@@ -39,5 +39,9 @@ export default {
   'admin-templates/create': () => import('@v/admin-templates/Form'),
   'admin-templates/:id(\\d+)/edit': () => import('@v/admin-templates/Form'),
 
-  'compose-video': () => import('@v/compose-videos/Index'),
+  'compose-video': () => import('@v/compose-videos/Index'),  
+
+  'admin-water-images': () => import('@v/admin-water-images/Index'),
+  'admin-water-images/create': () => import('@v/admin-water-images/Form'),
+  'admin-water-images/:id(\\d+)/edit': () => import('@v/admin-water-images/Form'),
 }

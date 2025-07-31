@@ -88,5 +88,7 @@ Route::prefix('admin-api')
             //素材拼接模板
             Route::resource('admin-templates', C\AdminTemplateController::class)->except(['show']);
             Route::post('admin-templates/generate-video',[C\AdminTemplateController::class, 'generateVideo'])->name('generateVideo');
+            Route::resource('admin-water-images', C\AdminWaterImageController::class)->except(['show']);
+            Route::get('admin-water-images/list', [C\AdminWaterImageController::class, 'getList'])->name('admin-water-images.list');
         });
     });

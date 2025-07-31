@@ -8,6 +8,7 @@ use AlibabaCloud\Tea\Tea;
 use AlibabaCloud\Tea\Utils\Utils;
 use AlibabaCloud\Tea\Console\Console;
 use Darabonba\OpenApi\Models\Config;
+use App\Models\AdminWaterImage;
 use AlibabaCloud\SDK\Mts\V20140618\Models\SubmitJobsRequest;
 use AlibabaCloud\SDK\Mts\V20140618\Models\QueryJobListRequest;
 use OSS\OssClient;
@@ -74,30 +75,19 @@ class AliCloudVideoStitcher {
             'MergeConfigUrl' => $merge_config_url
         ];
         //添加水印
-        if ($template['is_water_mark'] == 1) {
+        if (!empty($template['water_image_id'])) {
             $image_watermark_input = array(
                             'Location' => $this->ossLocation,
                             'Bucket' => $this->input_bucket
                             );
-            if ($template['product_id'] == 2) {
-                if ($template['screen_type'] == 1) {
-                    $image_watermark_input['Object'] =  urlencode($this->heng_water_mark_image);
-                    $template_id = $this->heng_template_id;
-                }else{
-                    $image_watermark_input['Object'] =  urlencode($this->shu_water_mark_image);
-                    $template_id = $this->shu_template_id;
-                }
-            }
-            if ($template['product_id'] == 1) {
-                if ($template['screen_type'] == 1) {
-                    $image_watermark_input['Object'] =  urlencode($this->heng_water_mark_image_shujin);
-                    $template_id = $this->heng_template_id;
-                }else{
-                    $image_watermark_input['Object'] =  urlencode($this->shu_water_mark_image_shujin);
-                    $template_id = $this->shu_template_id;
-                }
-            }
-           
+            $water_image = AdminWaterImage::find($template['water_image_id'])->toArray();
+            $title = data_get($water_image, 'title');
+            $image_watermark_input['Object'] = urlencode('images/'.$title.'.png');
+            if ($template['screen_type'] == 1) {
+                $template_id = $this->heng_template_id;
+            }else{
+                $template_id = $this->shu_template_id;
+            }    
             $output['WaterMarks'] = array(
                                         array(
                                                 'WaterMarkTemplateId' => $template_id,
