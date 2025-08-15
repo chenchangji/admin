@@ -81,8 +81,9 @@ class AliCloudVideoStitcher {
                             'Bucket' => $this->input_bucket
                             );
             $water_image = AdminWaterImage::find($template['water_image_id'])->toArray();
-            $title = data_get($water_image, 'title');
-            $image_watermark_input['Object'] = urlencode('images/'.$title.'.png');
+            $url = data_get($water_image, 'url');
+            $parsed_url = parse_url($url);
+            $image_watermark_input['Object'] = $parsed_url['path'] ?? '';
             if ($template['screen_type'] == 1) {
                 $template_id = $this->heng_template_id;
             }else{

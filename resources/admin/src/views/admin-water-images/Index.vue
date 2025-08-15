@@ -13,6 +13,11 @@
     >
       <a-table-column title="ID" data-index="id" />
       <a-table-column title="标题" data-index="title" />
+      <a-table-column title="类型" data-index="type" key="type">
+        <template slot-scope="text">
+            {{ getTypeLabel(text) }}
+        </template>
+      </a-table-column>
       <a-table-column title="水印图" key="url" :width="120">
         <template #default="{ url }">
           <div v-if="url" style="cursor: pointer">
@@ -92,6 +97,13 @@ export default {
       } finally {
         this.$scrollResolve?.()
       }
+    },
+    getTypeLabel(typeValue) {
+      const typeMap = {
+        1: '图片',
+        2: 'GIF动图',
+      };
+      return typeMap[typeValue] || typeValue; // 找不到则显示原值
     },
     async handleDelete(id) {
       try {

@@ -226,6 +226,40 @@ class AdminTemplateService
                     'created_at'     => date('Y-m-d H:i:s'),
                     'updated_at'     => date('Y-m-d H:i:s'),
                 ];
+                //清血信息流24 多生成一个带电话的水印视频
+                if ($template['product_id'] == 2 
+                        && $template['product_type'] == 1 
+                        && $template['product_format']  == 3
+                    ) {
+                    //再提交一次拼接作业
+                    $template_tmp = $template;
+                    if ($template['screen_type'] == 1) {
+                        $template_tmp['water_image_id'] = 15;
+                    }else{
+                        $template_tmp['water_image_id'] = 14;
+                    }
+                    $response = $videoStitcher->submitStitchingJob($video_urls, $date.'-'.$template['title'].'-'.$i .'-水印2', $template_tmp);
+                    // 6. 获取作业ID
+                    $job_id = data_get($response, 'body.jobResultList.jobResult.0.job.jobId');
+                    if (!empty($job_id)) {
+                        $job_ids[]  =$job_id;
+                    }
+                    $video_data[] = [
+                        'title'          => $date.'-'.$template['title'].'-'. $i .'-水印2',
+                        'template_id'    => $template['id'],
+                        'job_id'         => $job_id,
+                        'product_id'     => $template['product_id'],
+                        'product_format' => $template['product_format'],
+                        'screen_type'    => $template['screen_type'],
+                        'actor_ids'      => json_encode($actor_ids),
+                        'material_ids'   => json_encode(explode('-', $key)),
+                        'material_titles'   => implode('+',$material_titles),
+                        'status'         => 0,
+                        'creator_id'     => $creator_id,
+                        'created_at'     => date('Y-m-d H:i:s'),
+                        'updated_at'     => date('Y-m-d H:i:s'),
+                    ];
+                }
                 $i++;
                 logger( "拼接作业已提交，作业ID: {$job_id}\n");
             } catch (Exception $e) {

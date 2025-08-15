@@ -156,6 +156,7 @@ export default {
     },
     getProductFormatLabel(classValue) {
       const classMap = {
+        0: '无',
         1: '拆零',
         2: '大盒',
         3: '24片',

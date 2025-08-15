@@ -9,6 +9,13 @@
       <lz-form-item label="标题" required prop="title">
         <a-input v-model="form.title"/>
       </lz-form-item>
+
+      <lz-form-item label="图片类型"  prop="type">
+        <a-select v-model="form.type" placeholder="请选择图片类型">
+          <a-select-option :value="1">图片</a-select-option>
+          <a-select-option :value="2">GIF动图</a-select-option>
+        </a-select>
+      </lz-form-item>
       
       <!-- 图片上传 -->
       <lz-form-item label="图片上传" required prop="url">
@@ -76,6 +83,7 @@ export default {
     return {
       form: {
         title: '',
+        type:'',
         url: ''
       },
       errors: {},
@@ -140,6 +148,13 @@ export default {
         message.error('图片大小不能超过2MB')
         return false
       }
+
+      if (!this.form.title) {
+        this.imageUploadError = '请输入水印标题!'
+        message.error('请输入水印标题')
+        return false
+      } 
+
       
       this.imageUploadError = null
       return true
@@ -153,13 +168,13 @@ export default {
         onError(new Error('OSS client not initialized'))
         return
       }
-      
+
       this.isImageUploading = true
       this.imageUploadProgress = 0
       
       try {
         // 生成唯一文件名
-        const fileName = this.form.title + '.png'
+        const fileName = this.form.title + (this.form.type == 1 ? '.png' : '.gif')
         // 上传到OSS
         const result = await this.ossClient.put(`images/${fileName}`, file, {
           progress: (p) => {
